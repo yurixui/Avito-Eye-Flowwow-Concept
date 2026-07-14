@@ -110,14 +110,17 @@
    gaps from the 812px bottom, so on a full-height screen the layout is
    pixel-identical to Figma, and on a short one it simply rides up together. */
 
-/* frame (726:3621) — viewfinder corner brackets. Design (36,244) 303x325 →
-   bottom edge at 812-(244+325)=243. */
+/* frame (726:3621) — viewfinder corner brackets, 303x255, SVG re-exported
+   to the shorter 255px height so the brackets stay crisp (not squashed).
+   Vertically CENTERED between the app bar (bottom y=109) and the shutter
+   (top y=608): midpoint 358.5, so top=231, bottom=486 → bottom:326. Equal
+   ~122px gaps top/bottom. Horizontally centered too (36px each side). */
 .cropFrame {
   position: absolute;
-  bottom: 243px;
+  bottom: 326px;
   left: 36px;
   width: 303px;
-  height: 325px;
+  height: 255px;
   pointer-events: none;
 }
 

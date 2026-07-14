@@ -1,6 +1,6 @@
-<svg width="305" height="327" viewBox="0 0 305 327" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="305" height="257" viewBox="0 0 305 257" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M1 41C1 31.7003 1 27.0504 2.02223 23.2354C4.79624 12.8827 12.8827 4.79624 23.2354 2.02223C27.0504 1 31.7003 1 41 1" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-<path d="M1 286C1 295.3 1 299.95 2.02223 303.765C4.79624 314.117 12.8827 322.204 23.2354 324.978C27.0504 326 31.7003 326 41 326" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1 216C1 225.3 1 229.95 2.02223 233.765C4.79624 244.117 12.8827 252.204 23.2354 254.978C27.0504 256 31.7003 256 41 256" stroke="white" stroke-width="2" stroke-linejoin="round"/>
 <path d="M304 41C304 31.7003 304 27.0504 302.978 23.2354C300.204 12.8827 292.117 4.79624 281.765 2.02223C277.95 1 273.3 1 264 1" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-<path d="M304 286C304 295.3 304 299.95 302.978 303.765C300.204 314.117 292.117 322.204 281.765 324.978C277.95 326 273.3 326 264 326" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+<path d="M304 216C304 225.3 304 229.95 302.978 233.765C300.204 244.117 292.117 252.204 281.765 254.978C277.95 256 273.3 256 264 256" stroke="white" stroke-width="2" stroke-linejoin="round"/>
 </svg>
