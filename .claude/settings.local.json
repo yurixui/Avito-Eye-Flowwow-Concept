@@ -30,7 +30,8 @@
       "Bash(curl -sk https://localhost:5173/ --max-time 8 -w \"\\\\n[status: %{http_code}]\\\\n\")",
       "Bash(gh api *)",
       "Bash(gh repo *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(npm run *)"
     ]
   }
 }

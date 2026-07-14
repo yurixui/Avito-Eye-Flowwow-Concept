@@ -5,3 +5,6 @@ dist
 
 # local MCP config — contains a Figma token, never commit
 figma-mcp-config.json
+
+# TS build cache
+*.tsbuildinfo
