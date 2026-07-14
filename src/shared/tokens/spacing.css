@@ -1,0 +1,13 @@
+/* Button + layout tokens from Figma variables (button/l/*) */
+:root {
+  --button-l-padding-top: 15px;
+  --button-l-padding-right: 15px;
+  --button-l-padding-bottom: 17px;
+  --button-l-padding-left: 15px;
+  --button-l-padding-between: 4px;
+  --button-l-radius-square: 16px;
+  --button-l-height-fixed: 52px;
+
+  --screen-width: 375px;
+  --screen-height: 812px;
+}

@@ -1,0 +1,45 @@
+/* Manrope Cut 008 — UI text (Avito's cut of Manrope) */
+@font-face {
+  font-family: "Manrope Cut 008";
+  src:
+    url("/fonts/Manrope_Cut_008-Medium.woff2") format("woff2"),
+    url("/fonts/Manrope_Cut_008-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Manrope Cut 008";
+  src:
+    url("/fonts/Manrope_Cut_008-ExtraBold.woff2") format("woff2"),
+    url("/fonts/Manrope_Cut_008-ExtraBold.woff") format("woff");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Aeroport — "Avito Eye" logotype only */
+@font-face {
+  font-family: "Aeroport";
+  src: url("/fonts/Aeroport-regular-trial.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aeroport";
+  src: url("/fonts/Aeroport-medium-trial.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aeroport";
+  src: url("/fonts/Aeroport-bold-trial.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

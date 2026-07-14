@@ -1,0 +1,79 @@
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Scales the entire 375px-wide design uniformly for wider devices: width is
+   fixed at the design's 375px, then transform:scale (driven by --width-scale,
+   see useWidthScale) blows the whole thing up so it visually fills the real
+   frame width. Height is the inverse (100% / scale) so that after the same
+   transform it lands back on exactly 100% of the screen's real height too —
+   the .scroll region absorbs any resulting height difference from the design
+   baseline, same as it already does for scroll content. */
+.scaleRoot {
+  position: relative;
+  width: 375px;
+  height: calc(100% / var(--width-scale, 1));
+  transform: scale(var(--width-scale, 1));
+  transform-origin: top left;
+}
+
+/* Fixed header: search bar + the peeker overlapping its right edge.
+   Node 677:4976 stays put while the grid below scrolls under it. */
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+}
+
+/* Node 677:4975 ("Union") — not a plain rectangle: it's 123px tall across
+   the full width, plus an extra tab reaching down to 293px only under the
+   peeker's column, so the peeker's taller silhouette gets a white backing
+   without the search bar's row needing to be that tall too. Painted first
+   (behind SearchBar/AvitoEyePeeker in DOM order) — no z-index needed. */
+.topSwoop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 375px;
+  height: 293px;
+  pointer-events: none;
+}
+
+/* Node 677:4812 ("Product Grid Container") — everything below the header
+   scrolls; the header and tab bar (both position:absolute, outside this
+   element) stay fixed in place above it. */
+.scroll {
+  position: absolute;
+  /* 123px = topSwoop's own bottom edge (full-width white coverage). Using
+     the search bar's bottom (66px) here instead — a shorter box — let
+     category cards start scrolling into view UNDER topSwoop's still-opaque
+     white area and get clipped there, since topSwoop (in .header,
+     z-index:4) paints over .scroll (z-index:auto) wherever they overlap. */
+  top: 123px;
+  left: 0;
+  right: 0;
+  bottom: 76px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* 10px gap from topSwoop's bottom edge to the first category row. */
+  padding-top: 10px;
+  padding-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Node 677:5026 ("TabBar") — fixed to the bottom, never scrolls. */
+.tabBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+}

@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"/c/Users/yboro/.claude.json\" \"/c/Users/yboro/.claude.json.bak\" && echo backed up)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/yboro/.claude.json','utf8'\\)\\); console.log\\('valid JSON'\\)\")",
+      "Bash(npx --version)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('C:/Users/yboro/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/claude_desktop_config.json','utf8'\\)\\); console.log\\('valid'\\)\")",
+      "Bash(tasklist)",
+      "mcp__mcp-registry__search_mcp_registry",
+      "mcp__mcp-registry__list_connectors",
+      "mcp__4f62b9ad-9b97-44b0-809c-498b14a37149__get_metadata",
+      "mcp__4f62b9ad-9b97-44b0-809c-498b14a37149__get_screenshot",
+      "Bash(curl -sL -o \"/c/Users/yboro/AppData/Local/Temp/claude/C--Users-yboro-Desktop-all-Avito-Eye-Flowwow/95bf28bd-0a40-47cc-be47-fb1fae59c4d1/scratchpad/flow_overview.png\" \"https://www.figma.com/api/mcp/asset/3e84016d-16cd-4f57-b606-97a23ade080e\")",
+      "mcp__4f62b9ad-9b97-44b0-809c-498b14a37149__get_variable_defs",
+      "mcp__4f62b9ad-9b97-44b0-809c-498b14a37149__get_design_context",
+      "Bash(npm -v)",
+      "Bash(npm install *)",
+      "Bash(curl -sL -o \"/c/Users/yboro/AppData/Local/Temp/claude/C--Users-yboro-Desktop-all-Avito-Eye-Flowwow/95bf28bd-0a40-47cc-be47-fb1fae59c4d1/scratchpad/start_reference.png\" \"https://www.figma.com/api/mcp/asset/4446b0a3-4234-487d-a351-61c729a8ff7b\")",
+      "Bash(curl -sL -o \"/c/Users/yboro/AppData/Local/Temp/claude/C--Users-yboro-Desktop-all-Avito-Eye-Flowwow/95bf28bd-0a40-47cc-be47-fb1fae59c4d1/scratchpad/start_v2.png\" \"https://www.figma.com/api/mcp/asset/cfa9e705-20d4-4b25-9aa2-32f7bee9ca6b\")",
+      "Bash(curl -sL -o \"/c/Users/yboro/AppData/Local/Temp/claude/C--Users-yboro-Desktop-all-Avito-Eye-Flowwow/95bf28bd-0a40-47cc-be47-fb1fae59c4d1/scratchpad/home_screen.png\" \"https://www.figma.com/api/mcp/asset/95186483-ba22-4c62-ba9d-f6332659fe62\")",
+      "mcp__figma__download_figma_images",
+      "Bash(npm ls *)",
+      "Bash(node -e \"require\\('sharp'\\); console.log\\('sharp available'\\)\")",
+      "mcp__figma__get_figma_data",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/@vitejs/plugin-basic-ssl/package.json'\\).version\\)\")",
+      "Bash(curl -sk https://localhost:5173/ -o /dev/null -w \"https status: %{http_code}\\\\n\" --max-time 8)",
+      "Bash(curl -s http://localhost:5173/ -o /dev/null -w \"http status: %{http_code}\\\\n\" --max-time 8)",
+      "Bash(curl -sk \"https://localhost:5173/src/screens/camera/CameraScreen.tsx\" --max-time 8 -w \"\\\\n[status: %{http_code}]\\\\n\")",
+      "Bash(curl -sk https://localhost:5173/ --max-time 8 -w \"\\\\n[status: %{http_code}]\\\\n\")",
+      "Bash(gh api *)",
+      "Bash(gh repo *)",
+      "Bash(git config *)"
+    ]
+  }
+}

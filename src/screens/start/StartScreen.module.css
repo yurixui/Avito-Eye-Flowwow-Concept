@@ -1,0 +1,124 @@
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Start-only safety net: pinned to the true top of the viewport via
+   position:fixed (independent of .frame's own box), so a measurement
+   shortfall under the iOS status bar shows this screen's white instead of
+   the page background. Not used on other screens — they don't need it and
+   it would sit on top of their own content. */
+.topFiller {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .topFiller {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: max(env(safe-area-inset-top, 0px) + 40px, 60px);
+    background: #ffffff;
+    z-index: 10;
+    pointer-events: none;
+  }
+}
+
+/* Flattened export of node 695:2340 ("0-gradient") — already includes the
+   rotated/masked gradient composition and its fade from transparent (top,
+   revealing the white screen bg) to opaque black (bottom, 70+742=812 = full
+   screen height), so it's placed as a single image instead of rebuilding
+   the mask/blend-mode stack. */
+.gradient {
+  position: absolute;
+  top: 8.6207%; /* 70 / 812 */
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+/* Everything below the gradient is one flex column, positioned once at
+   the logo's design top (165.71 / 812). Every gap after that is a plain
+   margin-top in normal flow, measured against each element's REAL
+   rendered box — not an independently-computed top offset. That's what
+   guarantees the 32px gap to the title is always exactly 32px regardless
+   of the logo's rendered size, and centering falls out of align-items
+   instead of left:50%/translateX hacks. */
+.content {
+  position: absolute;
+  top: 20.4084%; /* 165.71 / 812 */
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Flattened export of node 685:10014 ("0-avitoeye") — viewfinder brackets +
+   "Avito Eye" wordmark baked together (Aeroport rendering matched exactly).
+   width only, height: auto — the image's own intrinsic ratio decides its
+   height, so it can never be stretched/squashed. */
+.logo {
+  width: 53.3333%; /* 200 / 375 */
+  height: auto;
+}
+
+.title {
+  margin: 32px 0 0; /* exact gap to the logo above, per design */
+  width: 69.6%; /* 261 / 375 */
+  font-family: var(--font-family-ui);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--color-text-inverse);
+  text-align: center;
+}
+
+.subtitle {
+  margin: 14px 0 0; /* 475 - (393 + 68) */
+  width: 69.8667%; /* 262 / 375 */
+  font-family: var(--font-family-ui);
+  font-weight: 500;
+  font-size: var(--font-size-s10);
+  line-height: var(--font-line-height-s10);
+  letter-spacing: 0.13px;
+  color: var(--color-text-inverse);
+  text-align: center;
+}
+
+.ctaWrap {
+  margin: 27px 0 0; /* 538 - (475 + 36) */
+  width: 94.6667%; /* 355 / 375 */
+}
+
+.cta {
+  width: 100%;
+  min-height: var(--button-l-height-fixed);
+  border-radius: var(--button-l-radius-square);
+  background: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+  font-family: var(--font-family-ui);
+  font-weight: 500;
+  font-size: var(--font-size-m20);
+  line-height: var(--font-line-height-m20);
+}
+
+.disclaimer {
+  margin: 27px 0 0; /* 637 - (538 + 72) */
+  width: 50.4%; /* 189 / 375 */
+  font-family: var(--font-family-ui);
+  font-weight: 500;
+  font-size: var(--font-size-s10);
+  line-height: var(--font-line-height-s10);
+  letter-spacing: 0.13px;
+  color: var(--color-text-inverse);
+  opacity: 0.5;
+  text-align: center;
+  white-space: nowrap;
+}

@@ -1,0 +1,17 @@
+/* Type scale tokens from Figma (Nephakt DS): font/size + font/line-height pairs */
+:root {
+  --font-family-ui: "Manrope Cut 008", "Manrope", sans-serif;
+  --font-family-logo: "Aeroport", sans-serif;
+
+  /* S10 — captions / helper text */
+  --font-size-s10: 13px;
+  --font-line-height-s10: 18px;
+
+  /* M20 — buttons / body */
+  --font-size-m20: 15px;
+  --font-line-height-m20: 20px;
+
+  /* Larger sizes used ad-hoc on Start/Home screens (not tokenized in Figma variables, taken from layer inspection) */
+  --font-size-title-xl: 28px;
+  --font-line-height-title-xl: 1.2;
+}

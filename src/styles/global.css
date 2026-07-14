@@ -1,0 +1,47 @@
+@import "./fonts.css";
+@import "../shared/tokens/colors.css";
+@import "../shared/tokens/typography.css";
+@import "../shared/tokens/spacing.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-ui);
+  color: var(--color-text-primary);
+  background: #2b2b2b; /* desktop backdrop behind the phone shell */
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 480px) {
+  body {
+    /* Safety net: if any mobile browser/webview still leaves a sliver
+       below the fixed frame, it blends with white (Home/Camera's own
+       background, and the color under Start's tab-bar-less bottom too)
+       instead of showing a stray black seam. */
+    background: #ffffff;
+  }
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}

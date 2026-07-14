@@ -1,0 +1,68 @@
+/* .root is the stable anchor: matches Avito-eye's Figma frame (820:4642)
+   exactly — top-right corner at (0,0) of the header, 47x190. Never
+   transformed — .wrap (below) is what actually morphs/scales; .root just
+   gives .overlayIcon a fixed reference point that survives .wrap's
+   commit-time scale(40) untouched. */
+.root {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 47px;
+  height: 190px;
+  z-index: 5; /* above everything else on the screen except .overlayIcon */
+}
+
+/* The svg's own bleed box (path extends to x=64.68, y=-5..189.347, past
+   .root's nominal 47x190) — sized/positioned relative to .root instead of
+   resizing .root itself, so .root stays the true, stable anchor. This is
+   what commit() applies `scale(40)` to directly. */
+.wrap {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 65px;
+  height: 195px;
+  transform-origin: 100% 45%;
+  transition: transform 380ms cubic-bezier(0.6, 0, 0.9, 0.3);
+}
+
+.wrap.returning {
+  transition: none; /* path itself eases via requestAnimationFrame spring, see component */
+}
+
+.wrap.committing {
+  transition: transform 420ms cubic-bezier(0.5, 0, 1, 0.4);
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  touch-action: none;
+  cursor: grab;
+}
+
+.path {
+  fill: #000000;
+}
+
+/* Node 820:4644 ("Search Overlay") position (16,82), relative to .root —
+   .root's top-left IS Avito-eye's frame origin (0,0), so these are the raw
+   Figma numbers with no conversion needed. Sibling of .wrap (not nested
+   inside it) specifically so it never inherits .wrap's commit-time
+   scale(40); it only fades via .overlayFading below. */
+.overlayIcon {
+  position: absolute;
+  left: 16px;
+  top: 82px;
+  width: 20px;
+  height: 20px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 300ms ease-out;
+}
+
+.overlayFading {
+  opacity: 0;
+}

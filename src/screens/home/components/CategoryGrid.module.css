@@ -1,0 +1,54 @@
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.row::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  position: relative;
+  flex: 0 0 auto;
+  height: 68px;
+  border-radius: 14px;
+  background: #f2f1ef;
+  overflow: hidden;
+  padding: 9px 0 0 11px;
+}
+
+/* Every category image is exported at exactly its card's own size in
+   Figma (e.g. 74x68, 99x68, 72x68) — no oversized/right-anchored crop. */
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.title {
+  /* No max-width: the card's own padding (9px 0 0 11px) already bounds the
+     content box per-card, so text wraps correctly whether the card is
+     72px or 99px wide instead of clipping against a width borrowed from
+     the widest card. */
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding-right: 8px;
+  font-family: var(--font-family-ui);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--color-text-primary);
+}

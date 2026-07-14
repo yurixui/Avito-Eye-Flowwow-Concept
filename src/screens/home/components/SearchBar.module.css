@@ -1,0 +1,41 @@
+/* Node 677:4977 ("Search Input Container"): 302x45 at (14,14) within
+   "Search Container" (677:4976, itself at y=54 from Home's top) — so
+   68px from the top, 14px from the left, fixed 302px wide (not stretched
+   to fill the row, which was both oversized AND collided with the
+   peeker's column starting at x=328). */
+.bar {
+  position: relative;
+  width: 302px;
+  height: 45px;
+  margin: 68px 0 0 14px;
+  border-radius: 14px;
+  background: #f2f1ef;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+}
+
+.searchIcon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.placeholder {
+  flex: 1;
+  font-family: var(--font-family-ui);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 16px;
+  color: #777576;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

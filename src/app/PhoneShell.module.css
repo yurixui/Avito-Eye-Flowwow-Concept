@@ -1,0 +1,43 @@
+.viewport {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.frame {
+  position: relative;
+  width: var(--screen-width);
+  height: var(--screen-height);
+  overflow: hidden;
+  border-radius: 53px;
+  background: var(--color-bg-page);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* On real mobile viewports, drop the decorative frame and fill the screen
+   edge to edge. Height comes from --app-height, a plain px value written by
+   useAppHeight (see PhoneShell.tsx) from window.visualViewport/innerHeight.
+   CSS viewport units (vh/dvh/lvh) proved unreliable inside the in-app
+   browser this was tested in; a JS-measured px value has no such ambiguity
+   and is supported everywhere. */
+@media (max-width: 480px) {
+  .viewport {
+    /* flex-start, not center: if --app-height ever measures a hair short
+       of .viewport's own height, centering split the shortfall into equal
+       top+bottom gaps — invisible at the bottom (black on black) but
+       showing as a missing white sliver under the iOS status bar at the
+       top. Pinning to the top sends 100% of any shortfall to the bottom
+       only. */
+    align-items: flex-start;
+    padding: 0;
+  }
+
+  .frame {
+    width: 100vw;
+    height: var(--app-height, 100vh);
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
