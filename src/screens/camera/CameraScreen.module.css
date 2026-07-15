@@ -116,11 +116,11 @@
 
 /* frame (726:3621) — viewfinder corner brackets, 303x255, SVG re-exported
    to the shorter 255px height so the brackets stay crisp (not squashed).
-   Shifted 10px lower than the original centered placement and pinned from
-   the top so short browser viewports cannot pull it back over the title. */
+   Pinned from the top and raised above the original centered placement so
+   short mobile browser viewports cannot let the shutter overlap it. */
 .cropFrame {
   position: absolute;
-  top: 241px;
+  top: 185px;
   left: 36px;
   width: 303px;
   height: 255px;
