@@ -229,7 +229,7 @@ export function CameraScreen() {
 
         {!isProcessing && (
           <div className={styles.helpWrapper}>
-            <img className={styles.helpIcon} src="/images/camera-screen/shutter-glyph.svg" alt="" />
+            <img className={styles.helpIcon} src="/images/camera-screen/help-wrapper-icon.svg" alt="" />
             <span className={styles.helpText}>Наведите камеру на объект</span>
           </div>
         )}
@@ -259,14 +259,27 @@ export function CameraScreen() {
 
         {isProcessing && (
           <div className={styles.processLayer}>
-            {analysisState === "thinking" && <div className={styles.processGradient} />}
+            {analysisState === "thinking" && (
+              <div className={styles.processGradient}>
+                <img className={styles.gradientVector11} src="/images/camera-screen/gradient-vector-11.svg" alt="" />
+                <img className={styles.gradientVector13} src="/images/camera-screen/gradient-vector-13.svg" alt="" />
+                <img className={styles.gradientVector12} src="/images/camera-screen/gradient-vector-12.svg" alt="" />
+                <img className={styles.gradientVector14} src="/images/camera-screen/gradient-vector-14.svg" alt="" />
+                <img className={styles.gradientVector15} src="/images/camera-screen/gradient-vector-15.svg" alt="" />
+                <img className={styles.gradientVector16} src="/images/camera-screen/gradient-vector-16.svg" alt="" />
+              </div>
+            )}
 
             {analysisState !== "thinking" && (
               <div className={styles.objectWindow} style={objectWindowStyle} aria-hidden>
-                <img className={styles.objectFrame} src="/images/camera-screen/crop-frame.svg" alt="" />
-                <span className={styles.objectDot} />
+                <span className={styles.cornerTopLeft} />
+                <span className={styles.cornerTopRight} />
+                <span className={styles.cornerBottomLeft} />
+                <span className={styles.cornerBottomRight} />
               </div>
             )}
+
+            <img className={styles.objectDot} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div className={styles.processSheet}>
               <div className={styles.sheetHandle} />
