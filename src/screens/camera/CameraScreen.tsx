@@ -19,12 +19,19 @@ interface DetectionBox {
   y: number;
   width: number;
   height: number;
+  x2?: number;
+  y2?: number;
+}
+
+interface FrameSize {
+  width: number;
+  height: number;
 }
 
 interface VisionResult {
   label: string;
   confidence?: number;
-  bbox?: DetectionBox | null;
+  bbox?: DetectionBox | number[] | null;
   avitoCount?: number;
   listings?: Listing[];
 }
@@ -34,6 +41,7 @@ interface Listing {
   title: string;
   price: string;
   image: string;
+  url?: string;
 }
 
 interface ObjectSummary {
@@ -50,6 +58,28 @@ const DEFAULT_LISTINGS: Listing[] = [
   { id: "3", title: "Компьютерная мышь Logitech", price: "2 900 ₽", image: "/images/home-screen/product-mouse.avif" },
   { id: "4", title: "Мышь Logitech с подсветкой", price: "3 700 ₽", image: "/images/home-screen/product-mouse.avif" },
 ];
+
+function hasExternalImage(listing: Listing) {
+  return /^https?:\/\//i.test(listing.image);
+}
+
+function normalizeListing(listing: Listing, index: number): Listing | null {
+  const image = listing.image?.trim();
+  const title = listing.title?.trim();
+  if (!image || !title || !hasExternalImage({ ...listing, image })) return null;
+
+  return {
+    id: listing.id || `${index + 1}`,
+    title,
+    price: listing.price?.trim() || "Цена не указана",
+    image,
+    url: listing.url,
+  };
+}
+
+function normalizeListings(listings?: Listing[]) {
+  return (listings ?? []).map(normalizeListing).filter((listing): listing is Listing => Boolean(listing));
+}
 
 function cleanModelLabel(label?: string) {
   return (label ?? "объект")
@@ -119,7 +149,7 @@ function getObjectSummary(label?: string): ObjectSummary {
 
 function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
   const summary = getObjectSummary(result?.label);
-  const listings = result?.listings?.length ? result.listings : summary.listings;
+  const listings = normalizeListings(result?.listings);
 
   return {
     ...summary,
@@ -180,19 +210,79 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function normalizeDetectionBox(box: DetectionBox): DetectionBox {
-  const isNormalized = box.x <= 1 && box.y <= 1 && box.width <= 1 && box.height <= 1;
-  const x = isNormalized ? box.x * DESIGN_WIDTH : box.x;
-  const y = isNormalized ? box.y * DESIGN_HEIGHT : box.y;
-  const width = isNormalized ? box.width * DESIGN_WIDTH : box.width;
-  const height = isNormalized ? box.height * DESIGN_HEIGHT : box.height;
+function coerceDetectionBox(box: DetectionBox | number[] | null | undefined): DetectionBox | null {
+  if (!box) return null;
+
+  if (Array.isArray(box)) {
+    const [x, y, third, fourth] = box;
+    if ([x, y, third, fourth].some((value) => typeof value !== "number" || Number.isNaN(value))) return null;
+    return {
+      x,
+      y,
+      width: Math.max(1, third - x),
+      height: Math.max(1, fourth - y),
+    };
+  }
+
+  const width = typeof box.x2 === "number" ? box.x2 - box.x : box.width;
+  const height = typeof box.y2 === "number" ? box.y2 - box.y : box.height;
+  if ([box.x, box.y, width, height].some((value) => typeof value !== "number" || Number.isNaN(value))) return null;
+
+  return {
+    x: box.x,
+    y: box.y,
+    width: Math.max(1, width),
+    height: Math.max(1, height),
+  };
+}
+
+function mapSourceBoxToDesign(box: DetectionBox, sourceSize: FrameSize): DetectionBox {
+  const scaleToDesign = Math.max(DESIGN_WIDTH / sourceSize.width, DESIGN_HEIGHT / sourceSize.height);
+  const renderedWidth = sourceSize.width * scaleToDesign;
+  const renderedHeight = sourceSize.height * scaleToDesign;
+  const offsetX = (renderedWidth - DESIGN_WIDTH) / 2;
+  const offsetY = (renderedHeight - DESIGN_HEIGHT) / 2;
+
+  return {
+    x: box.x * scaleToDesign - offsetX,
+    y: box.y * scaleToDesign - offsetY,
+    width: box.width * scaleToDesign,
+    height: box.height * scaleToDesign,
+  };
+}
+
+function normalizeDetectionBox(rawBox: DetectionBox | number[] | null | undefined, sourceSize?: FrameSize): DetectionBox {
+  const box = coerceDetectionBox(rawBox);
+  if (!box) return { x: 29, y: 180, width: 315, height: 237 };
+
+  const maxCoord = Math.max(box.x, box.y, box.width, box.height);
+  const isNormalized = maxCoord <= 1;
+  const shouldMapFromSource =
+    Boolean(sourceSize) &&
+    !isNormalized &&
+    (box.x + box.width > DESIGN_WIDTH || box.y + box.height > DESIGN_HEIGHT || box.width > DESIGN_WIDTH || box.height > DESIGN_HEIGHT);
+
+  const designBox = shouldMapFromSource
+    ? mapSourceBoxToDesign(box, sourceSize!)
+    : {
+        x: isNormalized ? box.x * DESIGN_WIDTH : box.x,
+        y: isNormalized ? box.y * DESIGN_HEIGHT : box.y,
+        width: isNormalized ? box.width * DESIGN_WIDTH : box.width,
+        height: isNormalized ? box.height * DESIGN_HEIGHT : box.height,
+      };
+
+  const padding = shouldMapFromSource || isNormalized ? 16 : 0;
+  const x = designBox.x - padding;
+  const y = designBox.y - padding;
+  const width = designBox.width + padding * 2;
+  const height = designBox.height + padding * 2;
 
   const nextWidth = clamp(width, 72, 335);
   const nextHeight = clamp(height, 72, 360);
 
   return {
     x: clamp(x, 20, DESIGN_WIDTH - nextWidth - 20),
-    y: clamp(y, 145, 500),
+    y: clamp(y, 118, 560),
     width: nextWidth,
     height: nextHeight,
   };
@@ -330,13 +420,14 @@ async function captureVideoFrame(video: HTMLVideoElement | null) {
 
   const estimatedBox = estimateObjectBox(canvas) ?? { x: 29, y: 180, width: 315, height: 237 };
 
-  return new Promise<{ blob: Blob; url: string; bbox: DetectionBox }>((resolve) => {
+  return new Promise<{ blob: Blob; url: string; bbox: DetectionBox; size: FrameSize }>((resolve) => {
     canvas.toBlob((blob) => {
       const frameBlob = blob ?? new Blob();
       resolve({
         blob: frameBlob,
         url: URL.createObjectURL(frameBlob),
         bbox: estimatedBox,
+        size: { width, height },
       });
     }, "image/jpeg", 0.88);
   });
@@ -358,13 +449,8 @@ async function analyzeFrame(blob: Blob): Promise<VisionResult> {
   return response.json();
 }
 
-function normalizeBox(result: VisionResult | null): DetectionBox {
-  const box = result?.bbox;
-  if (!box) {
-    return { x: 29, y: 180, width: 315, height: 237 };
-  }
-
-  return normalizeDetectionBox(box);
+function normalizeBox(result: VisionResult | null, sourceSize?: FrameSize | null): DetectionBox {
+  return normalizeDetectionBox(result?.bbox, sourceSize ?? undefined);
 }
 
 // Node 726:3611 ("Avito Eye / Camera / Default"). Layer stack, bottom → top:
@@ -385,10 +471,13 @@ export function CameraScreen() {
   const [isGradientVisible, setIsGradientVisible] = useState(false);
   const [isGradientLeaving, setIsGradientLeaving] = useState(false);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
+  const [capturedFrameSize, setCapturedFrameSize] = useState<FrameSize | null>(null);
   const { videoRef, state } = useCamera(facingMode);
   const contentRef = useWidthScale<HTMLDivElement>(DESIGN_WIDTH);
   const requestIdRef = useRef(0);
   const dragStartYRef = useRef<number | null>(null);
+  const dragPointerIdRef = useRef<number | null>(null);
+  const dragBaseOffsetRef = useRef(0);
   const typingText = useTypingPhrases(analysisState === "thinking");
   const objectSummary = useMemo(() => mergeVisionSummary(visionResult), [visionResult]);
 
@@ -396,17 +485,21 @@ export function CameraScreen() {
   const flipCamera = () => setFacingMode((m) => (m === "environment" ? "user" : "environment"));
   const isProcessing = analysisState !== "idle";
   const isResult = analysisState === "found" || analysisState === "error";
-  const objectBox = normalizeBox(visionResult);
+  const objectBox = normalizeBox(visionResult, capturedFrameSize);
   const objectWindowStyle = {
     left: `${objectBox.x}px`,
     top: `${objectBox.y}px`,
     width: `${objectBox.width}px`,
     height: `${objectBox.height}px`,
   } satisfies CSSProperties;
+  const objectDotStyle = {
+    left: `${objectBox.x + objectBox.width / 2 - 12}px`,
+    top: `${objectBox.y + objectBox.height / 2 - 12}px`,
+  } satisfies CSSProperties;
   const processSheetStyle =
     sheetOffset > 0
       ? ({
-          transform: `translateY(${sheetOffset}px)`,
+          transform: `translate3d(0, ${sheetOffset}px, 0)`,
         } satisfies CSSProperties)
       : undefined;
 
@@ -420,6 +513,7 @@ export function CameraScreen() {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return frame.url;
     });
+    setCapturedFrameSize(frame.size);
     setSheetOffset(0);
     setIsSheetDragging(false);
     setIsSheetClosing(false);
@@ -434,7 +528,7 @@ export function CameraScreen() {
 
       setVisionResult({
         ...result,
-        bbox: result.bbox ? normalizeDetectionBox(result.bbox) : frame.bbox,
+        bbox: result.bbox ?? frame.bbox,
       });
       setAnalysisState("found");
       setIsGradientLeaving(true);
@@ -468,6 +562,7 @@ export function CameraScreen() {
     setIsGradientLeaving(false);
     setAnalysisState("idle");
     setVisionResult(null);
+    setCapturedFrameSize(null);
     setFrozenFrameUrl((previousUrl) => {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return null;
@@ -478,35 +573,46 @@ export function CameraScreen() {
     if (!isProcessing || isSheetClosing) return;
 
     dragStartYRef.current = null;
+    dragPointerIdRef.current = null;
     setIsSheetDragging(false);
     setIsSheetClosing(true);
     window.requestAnimationFrame(() => {
-      setSheetOffset(isResult ? 820 : 560);
+      setSheetOffset(DESIGN_HEIGHT + 80);
     });
-    window.setTimeout(resetAnalysis, 760);
   };
 
   const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!isProcessing || isSheetClosing) return;
+
     dragStartYRef.current = event.clientY;
+    dragPointerIdRef.current = event.pointerId;
+    dragBaseOffsetRef.current = sheetOffset;
     setIsSheetDragging(true);
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is best-effort in mobile webviews.
+    }
   };
 
   const handleSheetPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragStartYRef.current === null || isSheetClosing) return;
+    if (dragStartYRef.current === null || isSheetClosing || dragPointerIdRef.current !== event.pointerId) return;
 
-    const nextOffset = Math.max(0, event.clientY - dragStartYRef.current);
-    setSheetOffset(Math.min(nextOffset, isResult ? 820 : 560));
+    event.preventDefault();
+    const nextOffset = Math.max(0, dragBaseOffsetRef.current + event.clientY - dragStartYRef.current);
+    setSheetOffset(Math.min(nextOffset, DESIGN_HEIGHT + 80));
   };
 
   const handleSheetPointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragStartYRef.current === null) return;
+    if (dragStartYRef.current === null || dragPointerIdRef.current !== event.pointerId) return;
 
-    const finalOffset = Math.max(0, event.clientY - dragStartYRef.current);
+    const finalOffset = Math.max(0, dragBaseOffsetRef.current + event.clientY - dragStartYRef.current);
     dragStartYRef.current = null;
+    dragPointerIdRef.current = null;
     setIsSheetDragging(false);
 
-    if (finalOffset > 86) {
+    if (finalOffset > 96) {
+      setSheetOffset(finalOffset);
       closeProcessSheet();
       return;
     }
@@ -515,6 +621,8 @@ export function CameraScreen() {
   };
 
   const handleSheetTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.currentTarget !== event.target) return;
+
     if (isSheetClosing && event.propertyName === "transform") {
       resetAnalysis();
     }
@@ -605,7 +713,7 @@ export function CameraScreen() {
               </div>
             )}
 
-            <img className={styles.objectDot} src="/images/camera-screen/dot-object.svg" alt="" />
+            <img className={styles.objectDot} style={objectDotStyle} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div
               className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
@@ -655,19 +763,35 @@ export function CameraScreen() {
 
                   <section className={styles.resultsBlock}>
                     <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
-                    <div className={styles.resultsGrid}>
-                      {objectSummary.listings.map((listing) => (
-                        <article className={styles.resultCard} key={listing.id}>
-                          <div className={styles.resultCardImage}>
-                            <img src={listing.image} alt="" />
-                          </div>
-                          <div className={styles.resultCardBody}>
-                            <p className={styles.resultCardTitle}>{listing.title}</p>
-                            <p className={styles.resultCardPrice}>{listing.price}</p>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
+                    {objectSummary.listings.length > 0 ? (
+                      <div className={styles.resultsGrid}>
+                        {objectSummary.listings.map((listing) => {
+                          const card = (
+                            <>
+                              <div className={styles.resultCardImage}>
+                                <img src={listing.image} alt="" />
+                              </div>
+                              <div className={styles.resultCardBody}>
+                                <p className={styles.resultCardTitle}>{listing.title}</p>
+                                <p className={styles.resultCardPrice}>{listing.price}</p>
+                              </div>
+                            </>
+                          );
+
+                          return listing.url ? (
+                            <a className={styles.resultCard} href={listing.url} target="_blank" rel="noreferrer" key={listing.id}>
+                              {card}
+                            </a>
+                          ) : (
+                            <article className={styles.resultCard} key={listing.id}>
+                              {card}
+                            </article>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className={styles.resultsEmpty}>Real Avito listing photos are not available yet</p>
+                    )}
                   </section>
                 </div>
               )}
