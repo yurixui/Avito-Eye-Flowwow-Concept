@@ -24,6 +24,8 @@ interface VisionResult {
   label: string;
   confidence?: number;
   bbox?: DetectionBox;
+  avitoCount?: number;
+  listings?: Listing[];
 }
 
 interface Listing {
@@ -64,7 +66,7 @@ function getObjectSummary(label?: string): ObjectSummary {
       title: "Игровая мышь Logitech",
       category: "Электроника",
       subcategory: "Периферия",
-      count: 37,
+      count: DEFAULT_LISTINGS.length,
       listings: DEFAULT_LISTINGS,
     };
   }
@@ -74,13 +76,13 @@ function getObjectSummary(label?: string): ObjectSummary {
       title: "Автомобиль Vinfast VF3",
       category: "Транспорт",
       subcategory: "Автомобили",
-      count: 37,
       listings: [
         { id: "1", title: "Vinfast VF7 2024, 8 300 км", price: "2 225 000 ₽", image: "/images/home-screen/product-car.avif" },
         { id: "2", title: "Vinfast VF7 2025, 30 000 км", price: "1 200 000 ₽", image: "/images/home-screen/product-car.avif" },
         { id: "3", title: "Vinfast VF3, без пробега", price: "1 790 000 ₽", image: "/images/home-screen/product-car.avif" },
         { id: "4", title: "Vinfast VF3 электро", price: "1 650 000 ₽", image: "/images/home-screen/product-car.avif" },
       ],
+      count: 4,
     };
   }
 
@@ -89,26 +91,39 @@ function getObjectSummary(label?: string): ObjectSummary {
       title: "Металлический стол",
       category: "Для дома",
       subcategory: "Мебель",
-      count: 37,
       listings: [
         { id: "1", title: "Стол металлический рабочий", price: "18 900 ₽", image: "/images/home-screen/product-table.avif" },
         { id: "2", title: "Стол loft металл", price: "12 500 ₽", image: "/images/home-screen/product-table.avif" },
         { id: "3", title: "Письменный стол металл", price: "9 800 ₽", image: "/images/home-screen/product-table.avif" },
         { id: "4", title: "Стол дизайнерский", price: "24 000 ₽", image: "/images/home-screen/product-table.avif" },
       ],
+      count: 4,
     };
   }
 
   const title = cleanModelLabel(label).slice(0, 32) || "Похожий товар";
+  const listings = DEFAULT_LISTINGS.map((listing) => ({
+    ...listing,
+    title: `${title} на Авито`.slice(0, 44),
+  }));
+
   return {
     title,
     category: "Товары",
     subcategory: "Разное",
-    count: 37,
-    listings: DEFAULT_LISTINGS.map((listing) => ({
-      ...listing,
-      title: `${title} на Авито`.slice(0, 44),
-    })),
+    count: listings.length,
+    listings,
+  };
+}
+
+function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
+  const summary = getObjectSummary(result?.label);
+  const listings = result?.listings?.length ? result.listings : summary.listings;
+
+  return {
+    ...summary,
+    listings,
+    count: result?.avitoCount ?? listings.length,
   };
 }
 
@@ -233,14 +248,17 @@ export function CameraScreen() {
   const [analysisState, setAnalysisState] = useState<AnalysisState>("idle");
   const [frozenFrameUrl, setFrozenFrameUrl] = useState<string | null>(null);
   const [sheetOffset, setSheetOffset] = useState(0);
+  const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [isSheetClosing, setIsSheetClosing] = useState(false);
+  const [isGradientVisible, setIsGradientVisible] = useState(false);
+  const [isGradientLeaving, setIsGradientLeaving] = useState(false);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
   const { videoRef, state } = useCamera(facingMode);
   const contentRef = useWidthScale<HTMLDivElement>(DESIGN_WIDTH);
   const requestIdRef = useRef(0);
   const dragStartYRef = useRef<number | null>(null);
   const typingText = useTypingPhrases(analysisState === "thinking");
-  const objectSummary = useMemo(() => getObjectSummary(visionResult?.label), [visionResult?.label]);
+  const objectSummary = useMemo(() => mergeVisionSummary(visionResult), [visionResult]);
 
   const close = () => navigate(ROUTES.home);
   const flipCamera = () => setFacingMode((m) => (m === "environment" ? "user" : "environment"));
@@ -271,7 +289,10 @@ export function CameraScreen() {
       return frame.url;
     });
     setSheetOffset(0);
+    setIsSheetDragging(false);
     setIsSheetClosing(false);
+    setIsGradientVisible(true);
+    setIsGradientLeaving(false);
     setAnalysisState("thinking");
     setVisionResult(null);
 
@@ -281,6 +302,11 @@ export function CameraScreen() {
 
       setVisionResult(result);
       setAnalysisState("found");
+      setIsGradientLeaving(true);
+      window.setTimeout(() => {
+        setIsGradientVisible(false);
+        setIsGradientLeaving(false);
+      }, 420);
     } catch {
       if (requestIdRef.current !== requestId) return;
 
@@ -290,13 +316,21 @@ export function CameraScreen() {
         bbox: { x: 29, y: 298, width: 315, height: 236 },
       });
       setAnalysisState("error");
+      setIsGradientLeaving(true);
+      window.setTimeout(() => {
+        setIsGradientVisible(false);
+        setIsGradientLeaving(false);
+      }, 420);
     }
   };
 
   const resetAnalysis = () => {
     requestIdRef.current += 1;
     setIsSheetClosing(false);
+    setIsSheetDragging(false);
     setSheetOffset(0);
+    setIsGradientVisible(false);
+    setIsGradientLeaving(false);
     setAnalysisState("idle");
     setVisionResult(null);
     setFrozenFrameUrl((previousUrl) => {
@@ -308,13 +342,18 @@ export function CameraScreen() {
   const closeProcessSheet = () => {
     if (!isProcessing || isSheetClosing) return;
 
+    dragStartYRef.current = null;
+    setIsSheetDragging(false);
     setIsSheetClosing(true);
-    setSheetOffset(isResult ? 720 : 430);
-    window.setTimeout(resetAnalysis, 360);
+    window.requestAnimationFrame(() => {
+      setSheetOffset(isResult ? 780 : 520);
+    });
+    window.setTimeout(resetAnalysis, 560);
   };
 
   const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     dragStartYRef.current = event.clientY;
+    setIsSheetDragging(true);
     event.currentTarget.setPointerCapture(event.pointerId);
   };
 
@@ -330,6 +369,7 @@ export function CameraScreen() {
 
     const finalOffset = Math.max(0, event.clientY - dragStartYRef.current);
     dragStartYRef.current = null;
+    setIsSheetDragging(false);
 
     if (finalOffset > 86) {
       closeProcessSheet();
@@ -404,8 +444,8 @@ export function CameraScreen() {
 
         {isProcessing && (
           <div className={styles.processLayer}>
-            {analysisState === "thinking" && (
-              <div className={styles.processGradient}>
+            {isGradientVisible && (
+              <div className={`${styles.processGradient} ${isGradientLeaving ? styles.processGradientLeaving : ""}`}>
                 <img className={styles.gradientVector11} src="/images/camera-screen/gradient-vector-11.svg" alt="" />
                 <img className={styles.gradientVector13} src="/images/camera-screen/gradient-vector-13.svg" alt="" />
                 <img className={styles.gradientVector12} src="/images/camera-screen/gradient-vector-12.svg" alt="" />
@@ -427,7 +467,7 @@ export function CameraScreen() {
             <img className={styles.objectDot} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div
-              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
+              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
               style={processSheetStyle}
               onPointerDown={handleSheetPointerDown}
               onPointerMove={handleSheetPointerMove}

@@ -274,7 +274,11 @@
   opacity: 0;
   overflow: hidden;
   mix-blend-mode: screen;
-  animation: processGradientIn 520ms ease forwards;
+  animation: processGradientIn 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.processGradientLeaving {
+  animation: processGradientOut 420ms cubic-bezier(0.32, 0, 0.67, 0) forwards;
 }
 
 .processGradient img {
@@ -282,7 +286,7 @@
   display: block;
   max-width: none;
   pointer-events: none;
-  animation: gradientVectorColor 3.2s ease-in-out infinite alternate;
+  animation: gradientVectorPulse 3.2s ease-in-out infinite alternate;
 }
 
 .gradientVector11 {
@@ -340,18 +344,34 @@
 }
 
 @keyframes processGradientIn {
+  from {
+    opacity: 0;
+  }
+
   to {
     opacity: 1;
   }
 }
 
-@keyframes gradientVectorColor {
+@keyframes processGradientOut {
   from {
-    filter: hue-rotate(0deg) saturate(1);
+    opacity: 1;
   }
 
   to {
-    filter: hue-rotate(36deg) saturate(1.16);
+    opacity: 0;
+  }
+}
+
+@keyframes gradientVectorPulse {
+  from {
+    opacity: 0.86;
+    filter: saturate(1) brightness(1);
+  }
+
+  to {
+    opacity: 1;
+    filter: saturate(1.18) brightness(1.08);
   }
 }
 
@@ -431,11 +451,11 @@
 
 .processSheet {
   position: absolute;
-  top: 433px;
+  top: 393px;
   left: 0;
   z-index: 2;
   width: 375px;
-  height: 419px;
+  height: 459px;
   border-radius: 28px 28px 0 0;
   background: #ffffff;
   box-shadow: 0 -18px 42px rgba(0, 0, 0, 0.18);
@@ -445,22 +465,26 @@
   user-select: none;
   animation: processSheetIn 560ms cubic-bezier(0.19, 1, 0.22, 1) 80ms both;
   transition:
-    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
     height 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .processSheetResult {
-  height: 684px;
+  height: 724px;
   overflow: hidden;
 }
 
+.processSheetDragging {
+  transition: none;
+}
+
 .processSheetClosing {
-  transition: transform 340ms cubic-bezier(0.32, 0, 0.67, 0);
+  transition: transform 520ms cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 @keyframes processSheetIn {
   from {
-    transform: translateY(419px);
+    transform: translateY(459px);
   }
 
   to {
