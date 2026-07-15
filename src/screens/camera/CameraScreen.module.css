@@ -112,12 +112,11 @@
 
 /* frame (726:3621) — viewfinder corner brackets, 303x255, SVG re-exported
    to the shorter 255px height so the brackets stay crisp (not squashed).
-   Vertically CENTERED between the app bar (bottom y=109) and the shutter
-   (top y=608): midpoint 358.5, so top=231, bottom=486 → bottom:326. Equal
-   ~122px gaps top/bottom. Horizontally centered too (36px each side). */
+   Shifted 20px lower than the original centered placement so it clears the
+   mobile app bar title on short browser viewports. */
 .cropFrame {
   position: absolute;
-  bottom: 326px;
+  bottom: 306px;
   left: 36px;
   width: 303px;
   height: 255px;
