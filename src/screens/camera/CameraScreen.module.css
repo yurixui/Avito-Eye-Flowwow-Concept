@@ -451,11 +451,11 @@
 
 .processSheet {
   position: absolute;
-  top: 393px;
+  top: 373px;
   left: 0;
   z-index: 2;
   width: 375px;
-  height: 459px;
+  height: 479px;
   border-radius: 28px 28px 0 0;
   background: #ffffff;
   box-shadow: 0 -18px 42px rgba(0, 0, 0, 0.18);
@@ -470,7 +470,7 @@
 }
 
 .processSheetResult {
-  height: 724px;
+  height: 744px;
   overflow: hidden;
 }
 
@@ -484,7 +484,7 @@
 
 @keyframes processSheetIn {
   from {
-    transform: translateY(459px);
+    transform: translateY(479px);
   }
 
   to {

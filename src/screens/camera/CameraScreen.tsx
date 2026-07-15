@@ -1,4 +1,4 @@
-import { type CSSProperties, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type PointerEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { LottiePlayer } from "@/shared/components/LottiePlayer";
@@ -7,6 +7,7 @@ import { useWidthScale } from "@/shared/hooks/useWidthScale";
 import styles from "./CameraScreen.module.css";
 
 const DESIGN_WIDTH = 375;
+const DESIGN_HEIGHT = 812;
 const VISION_API_URL =
   import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://cover-myth-thing-railroad.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
@@ -23,7 +24,7 @@ interface DetectionBox {
 interface VisionResult {
   label: string;
   confidence?: number;
-  bbox?: DetectionBox;
+  bbox?: DetectionBox | null;
   avitoCount?: number;
   listings?: Listing[];
 }
@@ -175,6 +176,139 @@ function useTypingPhrases(active: boolean) {
   return text;
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function normalizeDetectionBox(box: DetectionBox): DetectionBox {
+  const isNormalized = box.x <= 1 && box.y <= 1 && box.width <= 1 && box.height <= 1;
+  const x = isNormalized ? box.x * DESIGN_WIDTH : box.x;
+  const y = isNormalized ? box.y * DESIGN_HEIGHT : box.y;
+  const width = isNormalized ? box.width * DESIGN_WIDTH : box.width;
+  const height = isNormalized ? box.height * DESIGN_HEIGHT : box.height;
+
+  const nextWidth = clamp(width, 72, 335);
+  const nextHeight = clamp(height, 72, 360);
+
+  return {
+    x: clamp(x, 20, DESIGN_WIDTH - nextWidth - 20),
+    y: clamp(y, 145, 500),
+    width: nextWidth,
+    height: nextHeight,
+  };
+}
+
+function estimateObjectBox(canvas: HTMLCanvasElement): DetectionBox | null {
+  const sampleWidth = 96;
+  const sampleHeight = Math.round((canvas.height / canvas.width) * sampleWidth);
+  const sample = document.createElement("canvas");
+  sample.width = sampleWidth;
+  sample.height = sampleHeight;
+
+  const context = sample.getContext("2d", { willReadFrequently: true });
+  if (!context) return null;
+
+  context.drawImage(canvas, 0, 0, sampleWidth, sampleHeight);
+  const { data } = context.getImageData(0, 0, sampleWidth, sampleHeight);
+  const mask = new Uint8Array(sampleWidth * sampleHeight);
+  const startY = Math.floor(sampleHeight * 0.16);
+  const endY = Math.floor(sampleHeight * 0.78);
+
+  const luminance = (index: number) => data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+
+  for (let y = startY; y < endY - 1; y += 1) {
+    for (let x = 4; x < sampleWidth - 5; x += 1) {
+      const index = (y * sampleWidth + x) * 4;
+      const current = luminance(index);
+      const right = luminance(index + 4);
+      const down = luminance(index + sampleWidth * 4);
+      const edge = Math.abs(current - right) + Math.abs(current - down);
+
+      if (edge > 34) {
+        for (let dy = -2; dy <= 2; dy += 1) {
+          for (let dx = -2; dx <= 2; dx += 1) {
+            const mx = x + dx;
+            const my = y + dy;
+            if (mx > 0 && mx < sampleWidth && my > 0 && my < sampleHeight) {
+              mask[my * sampleWidth + mx] = 1;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const visited = new Uint8Array(mask.length);
+  let best: { minX: number; minY: number; maxX: number; maxY: number; score: number } | null = null;
+
+  for (let i = 0; i < mask.length; i += 1) {
+    if (!mask[i] || visited[i]) continue;
+
+    const queue = [i];
+    visited[i] = 1;
+    let minX = sampleWidth;
+    let minY = sampleHeight;
+    let maxX = 0;
+    let maxY = 0;
+    let area = 0;
+
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const current = queue[cursor];
+      const x = current % sampleWidth;
+      const y = Math.floor(current / sampleWidth);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+      area += 1;
+
+      const neighbors = [current - 1, current + 1, current - sampleWidth, current + sampleWidth];
+      for (const next of neighbors) {
+        if (next < 0 || next >= mask.length || visited[next] || !mask[next]) continue;
+
+        const nextX = next % sampleWidth;
+        const xDistance = Math.abs(nextX - x);
+        if (xDistance > 1) continue;
+
+        visited[next] = 1;
+        queue.push(next);
+      }
+    }
+
+    const width = maxX - minX + 1;
+    const height = maxY - minY + 1;
+    const touchesEdge = minX <= 3 || maxX >= sampleWidth - 4 || maxY >= endY - 2;
+    const tooLarge = width > sampleWidth * 0.82 || height > sampleHeight * 0.66;
+    const tooSmall = area < 28 || width < 10 || height < 8;
+    if (touchesEdge || tooLarge || tooSmall) continue;
+
+    const centerX = (minX + maxX) / 2;
+    const centerBias = 1 - Math.min(0.55, Math.abs(centerX / sampleWidth - 0.5));
+    const score = area * centerBias;
+    if (!best || score > best.score) {
+      best = { minX, minY, maxX, maxY, score };
+    }
+  }
+
+  if (!best) return null;
+
+  const scaleToDesign = Math.max(DESIGN_WIDTH / canvas.width, DESIGN_HEIGHT / canvas.height);
+  const renderedWidth = canvas.width * scaleToDesign;
+  const renderedHeight = canvas.height * scaleToDesign;
+  const offsetX = (renderedWidth - DESIGN_WIDTH) / 2;
+  const offsetY = (renderedHeight - DESIGN_HEIGHT) / 2;
+  const sampleToRawX = canvas.width / sampleWidth;
+  const sampleToRawY = canvas.height / sampleHeight;
+  const padding = 22;
+
+  return normalizeDetectionBox({
+    x: (best.minX * sampleToRawX) * scaleToDesign - offsetX - padding,
+    y: (best.minY * sampleToRawY) * scaleToDesign - offsetY - padding,
+    width: (best.maxX - best.minX + 1) * sampleToRawX * scaleToDesign + padding * 2,
+    height: (best.maxY - best.minY + 1) * sampleToRawY * scaleToDesign + padding * 2,
+  });
+}
+
 async function captureVideoFrame(video: HTMLVideoElement | null) {
   const canvas = document.createElement("canvas");
   const width = video?.videoWidth || 750;
@@ -194,12 +328,15 @@ async function captureVideoFrame(video: HTMLVideoElement | null) {
     }
   }
 
-  return new Promise<{ blob: Blob; url: string }>((resolve) => {
+  const estimatedBox = estimateObjectBox(canvas) ?? { x: 29, y: 180, width: 315, height: 237 };
+
+  return new Promise<{ blob: Blob; url: string; bbox: DetectionBox }>((resolve) => {
     canvas.toBlob((blob) => {
       const frameBlob = blob ?? new Blob();
       resolve({
         blob: frameBlob,
         url: URL.createObjectURL(frameBlob),
+        bbox: estimatedBox,
       });
     }, "image/jpeg", 0.88);
   });
@@ -224,15 +361,10 @@ async function analyzeFrame(blob: Blob): Promise<VisionResult> {
 function normalizeBox(result: VisionResult | null): DetectionBox {
   const box = result?.bbox;
   if (!box) {
-    return { x: 29, y: 298, width: 315, height: 236 };
+    return { x: 29, y: 180, width: 315, height: 237 };
   }
 
-  return {
-    x: Math.max(20, Math.min(330, box.x)),
-    y: Math.max(170, Math.min(520, box.y)),
-    width: Math.max(72, Math.min(335, box.width)),
-    height: Math.max(72, Math.min(360, box.height)),
-  };
+  return normalizeDetectionBox(box);
 }
 
 // Node 726:3611 ("Avito Eye / Camera / Default"). Layer stack, bottom → top:
@@ -300,7 +432,10 @@ export function CameraScreen() {
       const result = await analyzeFrame(frame.blob);
       if (requestIdRef.current !== requestId) return;
 
-      setVisionResult(result);
+      setVisionResult({
+        ...result,
+        bbox: result.bbox ? normalizeDetectionBox(result.bbox) : frame.bbox,
+      });
       setAnalysisState("found");
       setIsGradientLeaving(true);
       window.setTimeout(() => {
@@ -313,7 +448,7 @@ export function CameraScreen() {
       setVisionResult({
         label: "объект",
         confidence: 0,
-        bbox: { x: 29, y: 298, width: 315, height: 236 },
+        bbox: frame.bbox,
       });
       setAnalysisState("error");
       setIsGradientLeaving(true);
@@ -346,9 +481,9 @@ export function CameraScreen() {
     setIsSheetDragging(false);
     setIsSheetClosing(true);
     window.requestAnimationFrame(() => {
-      setSheetOffset(isResult ? 780 : 520);
+      setSheetOffset(isResult ? 820 : 560);
     });
-    window.setTimeout(resetAnalysis, 560);
+    window.setTimeout(resetAnalysis, 760);
   };
 
   const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -361,7 +496,7 @@ export function CameraScreen() {
     if (dragStartYRef.current === null || isSheetClosing) return;
 
     const nextOffset = Math.max(0, event.clientY - dragStartYRef.current);
-    setSheetOffset(Math.min(nextOffset, isResult ? 720 : 430));
+    setSheetOffset(Math.min(nextOffset, isResult ? 820 : 560));
   };
 
   const handleSheetPointerUp = (event: PointerEvent<HTMLDivElement>) => {
@@ -377,6 +512,12 @@ export function CameraScreen() {
     }
 
     setSheetOffset(0);
+  };
+
+  const handleSheetTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (isSheetClosing && event.propertyName === "transform") {
+      resetAnalysis();
+    }
   };
 
   useEffect(() => {
@@ -473,6 +614,7 @@ export function CameraScreen() {
               onPointerMove={handleSheetPointerMove}
               onPointerUp={handleSheetPointerUp}
               onPointerCancel={handleSheetPointerUp}
+              onTransitionEnd={handleSheetTransitionEnd}
             >
               <div className={styles.sheetHandle} />
               {analysisState === "thinking" ? (
