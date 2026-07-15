@@ -49,6 +49,11 @@ export function CameraScreen() {
 
         <img className={styles.cropFrame} src="/images/camera-screen/crop-frame.svg" alt="" />
 
+        <div className={styles.helpWrapper}>
+          <img className={styles.helpIcon} src="/images/camera-screen/shutter-glyph.svg" alt="" />
+          <span className={styles.helpText}>Наведите камеру на объект</span>
+        </div>
+
         <button className={styles.shutter} aria-label="Найти по фото">
           <span className={styles.shutterInner}>
             <img className={styles.shutterGlyph} src="/images/camera-screen/shutter-glyph.svg" alt="" />
