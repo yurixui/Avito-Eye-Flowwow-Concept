@@ -1,4 +1,4 @@
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { LottiePlayer } from "@/shared/components/LottiePlayer";
@@ -24,6 +24,92 @@ interface VisionResult {
   label: string;
   confidence?: number;
   bbox?: DetectionBox;
+}
+
+interface Listing {
+  id: string;
+  title: string;
+  price: string;
+  image: string;
+}
+
+interface ObjectSummary {
+  title: string;
+  category: string;
+  subcategory: string;
+  count: number;
+  listings: Listing[];
+}
+
+const DEFAULT_LISTINGS: Listing[] = [
+  { id: "1", title: "Игровая мышь Logitech G, RGB", price: "4 800 ₽", image: "/images/home-screen/product-mouse.avif" },
+  { id: "2", title: "Logitech G Pro Wireless", price: "6 500 ₽", image: "/images/home-screen/product-mouse.avif" },
+  { id: "3", title: "Компьютерная мышь Logitech", price: "2 900 ₽", image: "/images/home-screen/product-mouse.avif" },
+  { id: "4", title: "Мышь Logitech с подсветкой", price: "3 700 ₽", image: "/images/home-screen/product-mouse.avif" },
+];
+
+function cleanModelLabel(label?: string) {
+  return (label ?? "объект")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .trim();
+}
+
+function getObjectSummary(label?: string): ObjectSummary {
+  const cleanLabel = cleanModelLabel(label).toLowerCase();
+
+  if (cleanLabel.includes("мыш") || cleanLabel.includes("mouse") || cleanLabel.includes("logitech")) {
+    return {
+      title: "Игровая мышь Logitech",
+      category: "Электроника",
+      subcategory: "Периферия",
+      count: 37,
+      listings: DEFAULT_LISTINGS,
+    };
+  }
+
+  if (cleanLabel.includes("авто") || cleanLabel.includes("vinfast") || cleanLabel.includes("car")) {
+    return {
+      title: "Автомобиль Vinfast VF3",
+      category: "Транспорт",
+      subcategory: "Автомобили",
+      count: 37,
+      listings: [
+        { id: "1", title: "Vinfast VF7 2024, 8 300 км", price: "2 225 000 ₽", image: "/images/home-screen/product-car.avif" },
+        { id: "2", title: "Vinfast VF7 2025, 30 000 км", price: "1 200 000 ₽", image: "/images/home-screen/product-car.avif" },
+        { id: "3", title: "Vinfast VF3, без пробега", price: "1 790 000 ₽", image: "/images/home-screen/product-car.avif" },
+        { id: "4", title: "Vinfast VF3 электро", price: "1 650 000 ₽", image: "/images/home-screen/product-car.avif" },
+      ],
+    };
+  }
+
+  if (cleanLabel.includes("стол") || cleanLabel.includes("table")) {
+    return {
+      title: "Металлический стол",
+      category: "Для дома",
+      subcategory: "Мебель",
+      count: 37,
+      listings: [
+        { id: "1", title: "Стол металлический рабочий", price: "18 900 ₽", image: "/images/home-screen/product-table.avif" },
+        { id: "2", title: "Стол loft металл", price: "12 500 ₽", image: "/images/home-screen/product-table.avif" },
+        { id: "3", title: "Письменный стол металл", price: "9 800 ₽", image: "/images/home-screen/product-table.avif" },
+        { id: "4", title: "Стол дизайнерский", price: "24 000 ₽", image: "/images/home-screen/product-table.avif" },
+      ],
+    };
+  }
+
+  const title = cleanModelLabel(label).slice(0, 32) || "Похожий товар";
+  return {
+    title,
+    category: "Товары",
+    subcategory: "Разное",
+    count: 37,
+    listings: DEFAULT_LISTINGS.map((listing) => ({
+      ...listing,
+      title: `${title} на Авито`.slice(0, 44),
+    })),
+  };
 }
 
 function useTypingPhrases(active: boolean) {
@@ -146,15 +232,20 @@ export function CameraScreen() {
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [analysisState, setAnalysisState] = useState<AnalysisState>("idle");
   const [frozenFrameUrl, setFrozenFrameUrl] = useState<string | null>(null);
+  const [sheetOffset, setSheetOffset] = useState(0);
+  const [isSheetClosing, setIsSheetClosing] = useState(false);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
   const { videoRef, state } = useCamera(facingMode);
   const contentRef = useWidthScale<HTMLDivElement>(DESIGN_WIDTH);
   const requestIdRef = useRef(0);
+  const dragStartYRef = useRef<number | null>(null);
   const typingText = useTypingPhrases(analysisState === "thinking");
+  const objectSummary = useMemo(() => getObjectSummary(visionResult?.label), [visionResult?.label]);
 
   const close = () => navigate(ROUTES.home);
   const flipCamera = () => setFacingMode((m) => (m === "environment" ? "user" : "environment"));
   const isProcessing = analysisState !== "idle";
+  const isResult = analysisState === "found" || analysisState === "error";
   const objectBox = normalizeBox(visionResult);
   const objectWindowStyle = {
     left: `${objectBox.x}px`,
@@ -162,6 +253,12 @@ export function CameraScreen() {
     width: `${objectBox.width}px`,
     height: `${objectBox.height}px`,
   } satisfies CSSProperties;
+  const processSheetStyle =
+    sheetOffset > 0
+      ? ({
+          transform: `translateY(${sheetOffset}px)`,
+        } satisfies CSSProperties)
+      : undefined;
 
   const startAnalysis = async () => {
     if (analysisState === "thinking") return;
@@ -173,6 +270,8 @@ export function CameraScreen() {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return frame.url;
     });
+    setSheetOffset(0);
+    setIsSheetClosing(false);
     setAnalysisState("thinking");
     setVisionResult(null);
 
@@ -192,6 +291,52 @@ export function CameraScreen() {
       });
       setAnalysisState("error");
     }
+  };
+
+  const resetAnalysis = () => {
+    requestIdRef.current += 1;
+    setIsSheetClosing(false);
+    setSheetOffset(0);
+    setAnalysisState("idle");
+    setVisionResult(null);
+    setFrozenFrameUrl((previousUrl) => {
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      return null;
+    });
+  };
+
+  const closeProcessSheet = () => {
+    if (!isProcessing || isSheetClosing) return;
+
+    setIsSheetClosing(true);
+    setSheetOffset(isResult ? 720 : 430);
+    window.setTimeout(resetAnalysis, 360);
+  };
+
+  const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    dragStartYRef.current = event.clientY;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleSheetPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartYRef.current === null || isSheetClosing) return;
+
+    const nextOffset = Math.max(0, event.clientY - dragStartYRef.current);
+    setSheetOffset(Math.min(nextOffset, isResult ? 720 : 430));
+  };
+
+  const handleSheetPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragStartYRef.current === null) return;
+
+    const finalOffset = Math.max(0, event.clientY - dragStartYRef.current);
+    dragStartYRef.current = null;
+
+    if (finalOffset > 86) {
+      closeProcessSheet();
+      return;
+    }
+
+    setSheetOffset(0);
   };
 
   useEffect(() => {
@@ -281,18 +426,69 @@ export function CameraScreen() {
 
             <img className={styles.objectDot} src="/images/camera-screen/dot-object.svg" alt="" />
 
-            <div className={styles.processSheet}>
+            <div
+              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
+              style={processSheetStyle}
+              onPointerDown={handleSheetPointerDown}
+              onPointerMove={handleSheetPointerMove}
+              onPointerUp={handleSheetPointerUp}
+              onPointerCancel={handleSheetPointerUp}
+            >
               <div className={styles.sheetHandle} />
-              <div className={styles.processStatus}>
-                <LottiePlayer className={styles.processLottie} path="/data.json" />
-                <span className={styles.processText}>
-                  {analysisState === "thinking"
-                    ? typingText || "Вникаю..."
-                    : analysisState === "error"
-                      ? "Похоже, это объект"
-                      : `Похоже, это ${visionResult?.label ?? "объект"}`}
-                </span>
-              </div>
+              {analysisState === "thinking" ? (
+                <div className={styles.processStatus}>
+                  <LottiePlayer className={styles.processLottie} path="/data.json" />
+                  <span className={styles.processText}>{typingText || "Вникаю..."}</span>
+                </div>
+              ) : (
+                <div className={styles.resultContent}>
+                  <div className={styles.resultSearchBar}>
+                    <div className={styles.resultPhoto}>
+                      {frozenFrameUrl && <img src={frozenFrameUrl} alt="" />}
+                    </div>
+                    <div className={styles.resultSearchHint}>
+                      <img src="/images/camera-screen/assistant-icon.svg" alt="" />
+                      <span>Дополнить запрос</span>
+                    </div>
+                  </div>
+
+                  <section className={styles.objectInfo}>
+                    <div className={styles.objectNameGroup}>
+                      <h2>{objectSummary.title}</h2>
+                      <div className={styles.objectCategory}>
+                        <span>{objectSummary.category}</span>
+                        <span className={styles.categoryArrow}>›</span>
+                        <span>{objectSummary.subcategory}</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.feedbackBar}>
+                      <span>Это то, что вы искали?</span>
+                      <div className={styles.feedbackActions}>
+                        <button type="button">Да</button>
+                        <button type="button">Нет</button>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className={styles.resultsBlock}>
+                    <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
+                    <div className={styles.resultsGrid}>
+                      {objectSummary.listings.map((listing) => (
+                        <article className={styles.resultCard} key={listing.id}>
+                          <div className={styles.resultCardImage}>
+                            <img src={listing.image} alt="" />
+                          </div>
+                          <div className={styles.resultCardBody}>
+                            <p className={styles.resultCardTitle}>{listing.title}</p>
+                            <p className={styles.resultCardPrice}>{listing.price}</p>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+              )}
             </div>
           </div>
         )}
