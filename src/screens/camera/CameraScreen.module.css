@@ -16,6 +16,15 @@
   z-index: 0;
 }
 
+.frozenFrame {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .fallback {
   position: absolute;
   inset: 0;
@@ -130,19 +139,20 @@
 
 .helpWrapper {
   position: absolute;
-  bottom: 222px;
+  top: 558px;
   left: 86px;
   z-index: 2;
   width: 203px;
   height: 32px;
-  border-radius: 16px;
+  border-radius: 999px;
   background: #ffffff;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 8px;
+  box-sizing: border-box;
   opacity: 0;
-  transform: translateY(8px) scale(0.96);
+  transform: translateY(8px);
   pointer-events: none;
   animation: helpWrapperIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) 2s forwards;
 }
@@ -166,7 +176,7 @@
 @keyframes helpWrapperIn {
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -254,18 +264,22 @@
 
 .processGradient {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   z-index: 0;
+  width: 375px;
+  height: 100%;
+  min-height: 812px;
   opacity: 0;
   background:
-    radial-gradient(circle at 27% 46%, rgba(83, 217, 255, 0.34) 0 14%, transparent 34%),
-    radial-gradient(circle at 70% 48%, rgba(119, 77, 255, 0.38) 0 14%, transparent 36%),
-    radial-gradient(circle at 50% 68%, rgba(255, 82, 164, 0.24) 0 10%, transparent 32%),
-    linear-gradient(135deg, rgba(0, 170, 255, 0.08), rgba(162, 72, 255, 0.14));
+    radial-gradient(ellipse 128px 210px at 23% 45%, rgba(88, 255, 179, 0.42) 0%, rgba(88, 255, 179, 0.18) 34%, transparent 70%),
+    radial-gradient(ellipse 138px 220px at 73% 45%, rgba(0, 170, 255, 0.44) 0%, rgba(0, 170, 255, 0.18) 34%, transparent 72%),
+    radial-gradient(ellipse 180px 150px at 50% 61%, rgba(153, 87, 255, 0.36) 0%, rgba(153, 87, 255, 0.16) 36%, transparent 72%),
+    radial-gradient(ellipse 150px 180px at 50% 38%, rgba(255, 95, 183, 0.26) 0%, rgba(255, 95, 183, 0.1) 38%, transparent 74%);
   mix-blend-mode: screen;
   animation:
     processGradientIn 520ms ease forwards,
-    processGradientMove 3.4s ease-in-out infinite alternate;
+    processGradientColors 3.2s ease-in-out infinite alternate;
 }
 
 @keyframes processGradientIn {
@@ -274,22 +288,20 @@
   }
 }
 
-@keyframes processGradientMove {
+@keyframes processGradientColors {
   from {
-    transform: scale(1) rotate(0deg);
-    filter: hue-rotate(0deg) blur(0);
+    filter: hue-rotate(0deg) saturate(1);
   }
 
   to {
-    transform: scale(1.08) rotate(5deg);
-    filter: hue-rotate(34deg) blur(2px);
+    filter: hue-rotate(36deg) saturate(1.16);
   }
 }
 
 .objectWindow {
   position: absolute;
   z-index: 1;
-  border-radius: 24px;
+  border-radius: 40px;
   box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.58);
   animation: objectWindowIn 360ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
@@ -306,43 +318,14 @@
   }
 }
 
-.cornerTopLeft,
-.cornerTopRight,
-.cornerBottomLeft,
-.cornerBottomRight {
+.objectFrame {
   position: absolute;
-  width: 58px;
-  height: 58px;
-  border-color: #ffffff;
-  border-style: solid;
-}
-
-.cornerTopLeft {
   top: 0;
   left: 0;
-  border-width: 4px 0 0 4px;
-  border-top-left-radius: 24px;
-}
-
-.cornerTopRight {
-  top: 0;
-  right: 0;
-  border-width: 4px 4px 0 0;
-  border-top-right-radius: 24px;
-}
-
-.cornerBottomLeft {
-  bottom: 0;
-  left: 0;
-  border-width: 0 0 4px 4px;
-  border-bottom-left-radius: 24px;
-}
-
-.cornerBottomRight {
-  right: 0;
-  bottom: 0;
-  border-width: 0 4px 4px 0;
-  border-bottom-right-radius: 24px;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 
 .objectDot {

@@ -93,8 +93,14 @@ async function captureVideoFrame(video: HTMLVideoElement | null) {
     }
   }
 
-  return new Promise<Blob>((resolve) => {
-    canvas.toBlob((blob) => resolve(blob ?? new Blob()), "image/jpeg", 0.88);
+  return new Promise<{ blob: Blob; url: string }>((resolve) => {
+    canvas.toBlob((blob) => {
+      const frameBlob = blob ?? new Blob();
+      resolve({
+        blob: frameBlob,
+        url: URL.createObjectURL(frameBlob),
+      });
+    }, "image/jpeg", 0.88);
   });
 }
 
@@ -139,6 +145,7 @@ export function CameraScreen() {
   const navigate = useNavigate();
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [analysisState, setAnalysisState] = useState<AnalysisState>("idle");
+  const [frozenFrameUrl, setFrozenFrameUrl] = useState<string | null>(null);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
   const { videoRef, state } = useCamera(facingMode);
   const contentRef = useWidthScale<HTMLDivElement>(DESIGN_WIDTH);
@@ -161,12 +168,16 @@ export function CameraScreen() {
 
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
+    const frame = await captureVideoFrame(videoRef.current);
+    setFrozenFrameUrl((previousUrl) => {
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      return frame.url;
+    });
     setAnalysisState("thinking");
     setVisionResult(null);
 
     try {
-      const blob = await captureVideoFrame(videoRef.current);
-      const result = await analyzeFrame(blob);
+      const result = await analyzeFrame(frame.blob);
       if (requestIdRef.current !== requestId) return;
 
       setVisionResult(result);
@@ -183,10 +194,17 @@ export function CameraScreen() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (frozenFrameUrl) URL.revokeObjectURL(frozenFrameUrl);
+    };
+  }, [frozenFrameUrl]);
+
   return (
     <div className={styles.screen}>
       {/* 1. camera-on — live feed, z-index bottom */}
       {state === "ready" && <video ref={videoRef} className={styles.video} autoPlay playsInline muted />}
+      {frozenFrameUrl && <img className={styles.frozenFrame} src={frozenFrameUrl} alt="" />}
       {(state === "denied" || state === "unsupported") && (
         <p className={styles.fallback}>
           Нет доступа к камере. Разрешите доступ в настройках браузера, чтобы протестировать поиск по фото.
@@ -207,7 +225,7 @@ export function CameraScreen() {
           </button>
         </header>
 
-        <img className={styles.cropFrame} src="/images/camera-screen/crop-frame.svg" alt="" />
+        {!isProcessing && <img className={styles.cropFrame} src="/images/camera-screen/crop-frame.svg" alt="" />}
 
         {!isProcessing && (
           <div className={styles.helpWrapper}>
@@ -245,10 +263,7 @@ export function CameraScreen() {
 
             {analysisState !== "thinking" && (
               <div className={styles.objectWindow} style={objectWindowStyle} aria-hidden>
-                <span className={styles.cornerTopLeft} />
-                <span className={styles.cornerTopRight} />
-                <span className={styles.cornerBottomLeft} />
-                <span className={styles.cornerBottomRight} />
+                <img className={styles.objectFrame} src="/images/camera-screen/crop-frame.svg" alt="" />
                 <span className={styles.objectDot} />
               </div>
             )}
