@@ -7,7 +7,6 @@ export function ProductCard({ product }: { product: Product }) {
     <div className={styles.card}>
       <div className={styles.imageWrap}>
         <img className={styles.image} src={product.image} alt={product.title} loading="lazy" />
-        <div className={styles.badge} />
       </div>
       <div className={styles.body}>
         <div className={styles.info}>

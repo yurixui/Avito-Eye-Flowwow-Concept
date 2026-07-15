@@ -1,5 +1,6 @@
 node_modules
 dist
+.vercel
 .DS_Store
 *.local
 
@@ -8,3 +9,4 @@ figma-mcp-config.json
 
 # TS build cache
 *.tsbuildinfo
+.env*
