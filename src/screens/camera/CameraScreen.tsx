@@ -33,11 +33,10 @@ export function CameraScreen() {
         </p>
       )}
 
-      {/* 2. opacity-upper-camera — top/bottom darkening gradient */}
-      <div className={styles.gradientOverlay} />
-
-      {/* 3. 2-eye-content — UI overlay */}
+      {/* 2-3. Camera UI overlay */}
       <div className={styles.content} ref={contentRef}>
+        <div className={styles.opacityUpperCamera} />
+
         <header className={styles.appBar}>
           {/* invisible 40x40 spacer (Figma node 726:3642, opacity 0) balances
               the close button so the title stays optically centered */}

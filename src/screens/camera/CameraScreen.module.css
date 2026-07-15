@@ -36,10 +36,13 @@
    bottom (0.4→0 over 16%) edges, plus a flat 5% tint, so the white UI reads
    over any camera image. pointer-events:none so taps pass through to the
    video below where the UI doesn't cover it. */
-.gradientOverlay {
+.opacityUpperCamera {
   position: absolute;
-  inset: 0;
-  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 375px;
+  height: 812px;
+  z-index: 0;
   pointer-events: none;
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 16%),
@@ -58,7 +61,7 @@
   height: calc(100% / var(--width-scale, 1));
   transform: scale(var(--width-scale, 1));
   transform-origin: top left;
-  z-index: 2;
+  z-index: 1;
 }
 
 /* App bar (726:3641) — at (15,69), width 344, row space-between/center. */
@@ -67,6 +70,7 @@
   top: 69px;
   left: 15px;
   width: 344px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -112,14 +116,15 @@
 
 /* frame (726:3621) — viewfinder corner brackets, 303x255, SVG re-exported
    to the shorter 255px height so the brackets stay crisp (not squashed).
-   Shifted 40px lower than the original centered placement so it clears the
-   mobile app bar title on short browser viewports. */
+   Shifted 60px lower than the original centered placement and pinned from
+   the top so short browser viewports cannot pull it back over the title. */
 .cropFrame {
   position: absolute;
-  bottom: 286px;
+  top: 291px;
   left: 36px;
   width: 303px;
   height: 255px;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -130,6 +135,7 @@
   position: absolute;
   bottom: 105px;
   left: 138px;
+  z-index: 1;
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -166,6 +172,7 @@
   position: absolute;
   bottom: 41px;
   left: 109px;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 32px;
