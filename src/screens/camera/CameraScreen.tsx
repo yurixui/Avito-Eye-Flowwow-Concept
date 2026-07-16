@@ -9,7 +9,7 @@ import styles from "./CameraScreen.module.css";
 const DESIGN_WIDTH = 375;
 const DESIGN_HEIGHT = 812;
 const VISION_API_URL =
-  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://cover-myth-thing-railroad.trycloudflare.com";
+  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://presently-uploaded-brilliant-singles.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
 
 type AnalysisState = "idle" | "thinking" | "found" | "error";
