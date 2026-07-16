@@ -752,65 +752,94 @@
 }
 
 .resultsGrid {
-  width: 359px;
+  width: 351px;
   display: grid;
-  grid-template-columns: repeat(2, 176px);
-  gap: 6px 7px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 10px;
 }
 
 .resultCard {
-  width: 176px;
-  min-width: 144px;
-  border-radius: 3px;
+  min-width: 0;
+  border-radius: 12px;
   background: #ffffff;
   overflow: hidden;
   box-shadow:
-    0 2px 2px rgba(0, 0, 0, 0.08),
-    0 0 2px rgba(0, 0, 0, 0.04);
+    0 2px 2px 0 rgba(0, 0, 0, 0.08),
+    0 0 2px 0 rgba(0, 0, 0, 0.04);
   color: inherit;
   text-decoration: none;
 }
 
 .resultCardImage {
-  width: 176px;
-  height: 177px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 176 / 177;
   background: #ebebeb;
   overflow: hidden;
 }
 
 .resultCardImage img {
-  width: 177px;
-  height: 177px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
 .resultCardBody {
-  min-height: 75px;
-  padding: 7px 8px 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 81px;
+  padding: 10px 10px 8px;
   box-sizing: border-box;
+}
+
+.resultCardInfo {
+  flex: 1;
+  min-width: 0;
 }
 
 .resultCardTitle {
   margin: 0;
-  width: 132px;
-  max-height: 44px;
-  overflow: hidden;
   font-family: var(--font-family-ui);
   font-weight: 500;
-  font-size: 12px;
-  line-height: 16px;
-  color: #000000;
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-text-primary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .resultCardPrice {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
   font-family: var(--font-family-ui);
   font-weight: 800;
-  font-size: 12px;
+  font-size: 15px;
   line-height: normal;
-  color: #000000;
+  color: var(--color-text-primary);
   white-space: nowrap;
+}
+
+.resultCardActions {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.resultCardAction {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resultCardAction img {
+  width: 19px;
+  height: 19px;
+  display: block;
 }
 
 .resultsEmpty {

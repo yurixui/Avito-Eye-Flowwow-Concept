@@ -870,8 +870,18 @@ export function CameraScreen() {
                                 <img src={listing.image} alt="" />
                               </div>
                               <div className={styles.resultCardBody}>
-                                <p className={styles.resultCardTitle}>{listing.title}</p>
-                                <p className={styles.resultCardPrice}>{listing.price}</p>
+                                <div className={styles.resultCardInfo}>
+                                  <p className={styles.resultCardTitle}>{listing.title}</p>
+                                  <p className={styles.resultCardPrice}>{listing.price}</p>
+                                </div>
+                                <div className={styles.resultCardActions} aria-hidden>
+                                  <span className={styles.resultCardAction}>
+                                    <img src="/images/home-screen/icon-heart.svg" alt="" />
+                                  </span>
+                                  <span className={styles.resultCardAction}>
+                                    <img src="/images/home-screen/icon-more.svg" alt="" />
+                                  </span>
+                                </div>
                               </div>
                             </>
                           );
