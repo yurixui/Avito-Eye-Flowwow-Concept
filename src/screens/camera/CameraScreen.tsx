@@ -868,9 +868,9 @@ export function CameraScreen() {
                   </section>
 
                   <section className={styles.resultsBlock}>
-                    <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
                     {objectSummary.listings.length > 0 ? (
                       <>
+                        <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
                         <div className={styles.resultsGrid}>
                           {objectSummary.listings.map((listing) => {
                             const card = (
@@ -913,7 +913,20 @@ export function CameraScreen() {
                         </div>
                       </>
                     ) : (
-                      <p className={styles.resultsEmpty}>Real Avito listing photos are not available yet</p>
+                      <div className={styles.nothingFound}>
+                        <div className={styles.nothingFoundText}>
+                          <p className={styles.nothingFoundTitle}>Нет объявлений по запросу</p>
+                          <p className={styles.nothingFoundDescription}>
+                            Дополните запрос или подпишитесь
+                            <br />
+                            на обновления, и мы уведомим вас, когда объявления появятся
+                          </p>
+                        </div>
+                        <button className={styles.nothingFoundButton} type="button">
+                          Подписаться на обновления
+                          <span className={styles.notificationDot} aria-hidden />
+                        </button>
+                      </div>
                     )}
                   </section>
                 </div>

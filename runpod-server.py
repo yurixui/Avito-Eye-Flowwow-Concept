@@ -157,21 +157,6 @@ def normalize_query(label: str) -> str:
     text = label.replace("_", " ").replace("-", " ")
     low = text.lower()
 
-    generic_labels = {
-        "object",
-        "item",
-        "thing",
-        "product",
-        "goods",
-        "unknown",
-        "объект",
-        "предмет",
-        "товар",
-    }
-
-    if low.strip() in generic_labels:
-        return "casio часы"
-
     if "casio" in low:
         return "casio часы"
     if "watch" in low or "clock" in low or "часы" in low:
@@ -515,6 +500,9 @@ def search_avito(label: str):
     if "casio" in query.lower() or "час" in query.lower() or "watch" in query.lower():
         print("Avito demo listings:", query, len(DEMO_CASIO_LISTINGS))
         return query, DEMO_CASIO_LISTINGS
+
+    print("Avito demo listings: no prepared category for", query)
+    return query, []
 
     if query in AVITO_CACHE:
         cached = AVITO_CACHE[query]
