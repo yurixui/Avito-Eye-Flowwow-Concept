@@ -1,4 +1,4 @@
-import { type CSSProperties, type PointerEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type PointerEvent, type TouchEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { LottiePlayer } from "@/shared/components/LottiePlayer";
@@ -477,6 +477,7 @@ export function CameraScreen() {
   const requestIdRef = useRef(0);
   const dragStartYRef = useRef<number | null>(null);
   const dragPointerIdRef = useRef<number | null>(null);
+  const dragTouchIdRef = useRef<number | null>(null);
   const dragBaseOffsetRef = useRef(0);
   const typingText = useTypingPhrases(analysisState === "thinking");
   const objectSummary = useMemo(() => mergeVisionSummary(visionResult), [visionResult]);
@@ -574,6 +575,7 @@ export function CameraScreen() {
 
     dragStartYRef.current = null;
     dragPointerIdRef.current = null;
+    dragTouchIdRef.current = null;
     setIsSheetDragging(false);
     setIsSheetClosing(true);
     window.requestAnimationFrame(() => {
@@ -581,34 +583,28 @@ export function CameraScreen() {
     });
   };
 
-  const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+  const startSheetDrag = (clientY: number) => {
     if (!isProcessing || isSheetClosing) return;
 
-    dragStartYRef.current = event.clientY;
-    dragPointerIdRef.current = event.pointerId;
+    dragStartYRef.current = clientY;
     dragBaseOffsetRef.current = sheetOffset;
     setIsSheetDragging(true);
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // Pointer capture is best-effort in mobile webviews.
-    }
   };
 
-  const handleSheetPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragStartYRef.current === null || isSheetClosing || dragPointerIdRef.current !== event.pointerId) return;
+  const moveSheetDrag = (clientY: number) => {
+    if (dragStartYRef.current === null || isSheetClosing) return;
 
-    event.preventDefault();
-    const nextOffset = Math.max(0, dragBaseOffsetRef.current + event.clientY - dragStartYRef.current);
+    const nextOffset = Math.max(0, dragBaseOffsetRef.current + clientY - dragStartYRef.current);
     setSheetOffset(Math.min(nextOffset, DESIGN_HEIGHT + 80));
   };
 
-  const handleSheetPointerUp = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragStartYRef.current === null || dragPointerIdRef.current !== event.pointerId) return;
+  const finishSheetDrag = (clientY: number) => {
+    if (dragStartYRef.current === null) return;
 
-    const finalOffset = Math.max(0, dragBaseOffsetRef.current + event.clientY - dragStartYRef.current);
+    const finalOffset = Math.max(0, dragBaseOffsetRef.current + clientY - dragStartYRef.current);
     dragStartYRef.current = null;
     dragPointerIdRef.current = null;
+    dragTouchIdRef.current = null;
     setIsSheetDragging(false);
 
     if (finalOffset > 96) {
@@ -618,6 +614,58 @@ export function CameraScreen() {
     }
 
     setSheetOffset(0);
+  };
+
+  const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") return;
+
+    dragPointerIdRef.current = event.pointerId;
+    startSheetDrag(event.clientY);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture is best-effort in mobile webviews.
+    }
+  };
+
+  const handleSheetPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") return;
+    if (dragStartYRef.current === null || isSheetClosing || dragPointerIdRef.current !== event.pointerId) return;
+
+    event.preventDefault();
+    moveSheetDrag(event.clientY);
+  };
+
+  const handleSheetPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") return;
+    if (dragStartYRef.current === null || dragPointerIdRef.current !== event.pointerId) return;
+
+    finishSheetDrag(event.clientY);
+  };
+
+  const handleSheetTouchStart = (event: TouchEvent<HTMLDivElement>) => {
+    if (!isProcessing || isSheetClosing || event.touches.length === 0) return;
+
+    const touch = event.touches[0];
+    dragTouchIdRef.current = touch.identifier;
+    startSheetDrag(touch.clientY);
+  };
+
+  const handleSheetTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (dragTouchIdRef.current === null || dragStartYRef.current === null || isSheetClosing) return;
+
+    const touch = Array.from(event.touches).find((item) => item.identifier === dragTouchIdRef.current);
+    if (!touch) return;
+
+    event.preventDefault();
+    moveSheetDrag(touch.clientY);
+  };
+
+  const handleSheetTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    if (dragTouchIdRef.current === null || dragStartYRef.current === null) return;
+
+    const touch = Array.from(event.changedTouches).find((item) => item.identifier === dragTouchIdRef.current);
+    finishSheetDrag(touch?.clientY ?? dragStartYRef.current);
   };
 
   const handleSheetTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
@@ -722,6 +770,10 @@ export function CameraScreen() {
               onPointerMove={handleSheetPointerMove}
               onPointerUp={handleSheetPointerUp}
               onPointerCancel={handleSheetPointerUp}
+              onTouchStart={handleSheetTouchStart}
+              onTouchMove={handleSheetTouchMove}
+              onTouchEnd={handleSheetTouchEnd}
+              onTouchCancel={handleSheetTouchEnd}
               onTransitionEnd={handleSheetTransitionEnd}
             >
               <div className={styles.sheetHandle} />

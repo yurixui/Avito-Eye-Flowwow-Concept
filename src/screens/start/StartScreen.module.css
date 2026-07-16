@@ -34,7 +34,7 @@
    instead of left:50%/translateX hacks. */
 .content {
   position: absolute;
-  top: calc(20.4084% + 20px); /* 165.71 / 812 + viewport clearance */
+  top: calc(20.4084% + 30px); /* 165.71 / 812 + viewport clearance */
   left: 0;
   right: 0;
   display: flex;
