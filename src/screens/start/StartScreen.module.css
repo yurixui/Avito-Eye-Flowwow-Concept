@@ -11,24 +11,6 @@
    shortfall under the iOS status bar shows this screen's white instead of
    the page background. Not used on other screens — they don't need it and
    it would sit on top of their own content. */
-.topFiller {
-  display: none;
-}
-
-@media (max-width: 480px) {
-  .topFiller {
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: max(env(safe-area-inset-top, 0px) + 40px, 60px);
-    background: #ffffff;
-    z-index: 10;
-    pointer-events: none;
-  }
-}
-
 /* Flattened export of node 695:2340 ("0-gradient") — already includes the
    rotated/masked gradient composition and its fade from transparent (top,
    revealing the white screen bg) to opaque black (bottom, 70+742=812 = full

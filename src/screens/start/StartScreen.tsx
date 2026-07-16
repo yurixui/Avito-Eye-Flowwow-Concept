@@ -8,7 +8,6 @@ export function StartScreen() {
 
   return (
     <div className={styles.screen}>
-      <div className={styles.topFiller} aria-hidden />
       <img className={styles.gradient} src="/images/0-screen/0-gradient.avif" alt="" />
 
       <div className={styles.content}>
