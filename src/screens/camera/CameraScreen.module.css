@@ -474,11 +474,17 @@
   overflow: hidden;
 }
 
+.processSheetEntered {
+  animation: none;
+}
+
 .processSheetDragging {
+  animation: none;
   transition: none;
 }
 
 .processSheetClosing {
+  animation: none;
   pointer-events: none;
   transition: transform 640ms cubic-bezier(0.32, 0, 0.67, 0);
   will-change: transform;

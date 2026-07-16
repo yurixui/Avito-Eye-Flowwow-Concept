@@ -1,4 +1,4 @@
-import { type CSSProperties, type PointerEvent, type TouchEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type AnimationEvent, type CSSProperties, type PointerEvent, type TouchEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { LottiePlayer } from "@/shared/components/LottiePlayer";
@@ -468,6 +468,7 @@ export function CameraScreen() {
   const [sheetOffset, setSheetOffset] = useState(0);
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [isSheetClosing, setIsSheetClosing] = useState(false);
+  const [hasSheetEntered, setHasSheetEntered] = useState(false);
   const [isGradientVisible, setIsGradientVisible] = useState(false);
   const [isGradientLeaving, setIsGradientLeaving] = useState(false);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
@@ -518,6 +519,7 @@ export function CameraScreen() {
     setSheetOffset(0);
     setIsSheetDragging(false);
     setIsSheetClosing(false);
+    setHasSheetEntered(false);
     setIsGradientVisible(true);
     setIsGradientLeaving(false);
     setAnalysisState("thinking");
@@ -558,6 +560,7 @@ export function CameraScreen() {
     requestIdRef.current += 1;
     setIsSheetClosing(false);
     setIsSheetDragging(false);
+    setHasSheetEntered(false);
     setSheetOffset(0);
     setIsGradientVisible(false);
     setIsGradientLeaving(false);
@@ -676,6 +679,14 @@ export function CameraScreen() {
     }
   };
 
+  const handleSheetAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+    if (event.currentTarget !== event.target) return;
+
+    if (event.animationName.includes("processSheetIn")) {
+      setHasSheetEntered(true);
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (frozenFrameUrl) URL.revokeObjectURL(frozenFrameUrl);
@@ -764,7 +775,7 @@ export function CameraScreen() {
             <img className={styles.objectDot} style={objectDotStyle} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div
-              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
+              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${hasSheetEntered ? styles.processSheetEntered : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
               style={processSheetStyle}
               onPointerDown={handleSheetPointerDown}
               onPointerMove={handleSheetPointerMove}
@@ -774,6 +785,7 @@ export function CameraScreen() {
               onTouchMove={handleSheetTouchMove}
               onTouchEnd={handleSheetTouchEnd}
               onTouchCancel={handleSheetTouchEnd}
+              onAnimationEnd={handleSheetAnimationEnd}
               onTransitionEnd={handleSheetTransitionEnd}
             >
               <div className={styles.sheetHandle} />
