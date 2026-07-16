@@ -870,41 +870,48 @@ export function CameraScreen() {
                   <section className={styles.resultsBlock}>
                     <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
                     {objectSummary.listings.length > 0 ? (
-                      <div className={styles.resultsGrid}>
-                        {objectSummary.listings.map((listing) => {
-                          const card = (
-                            <>
-                              <div className={styles.resultCardImage}>
-                                <img src={listing.image} alt="" />
-                              </div>
-                              <div className={styles.resultCardBody}>
-                                <div className={styles.resultCardInfo}>
-                                  <p className={styles.resultCardTitle}>{listing.title}</p>
-                                  <p className={styles.resultCardPrice}>{listing.price}</p>
+                      <>
+                        <div className={styles.resultsGrid}>
+                          {objectSummary.listings.map((listing) => {
+                            const card = (
+                              <>
+                                <div className={styles.resultCardImage}>
+                                  <img src={listing.image} alt="" />
                                 </div>
-                                <div className={styles.resultCardActions} aria-hidden>
-                                  <span className={styles.resultCardAction}>
-                                    <img src="/images/home-screen/icon-heart.svg" alt="" />
-                                  </span>
-                                  <span className={styles.resultCardAction}>
-                                    <img src="/images/home-screen/icon-more.svg" alt="" />
-                                  </span>
+                                <div className={styles.resultCardBody}>
+                                  <div className={styles.resultCardInfo}>
+                                    <p className={styles.resultCardTitle}>{listing.title}</p>
+                                    <p className={styles.resultCardPrice}>{listing.price}</p>
+                                  </div>
+                                  <div className={styles.resultCardActions} aria-hidden>
+                                    <span className={styles.resultCardAction}>
+                                      <img src="/images/home-screen/icon-heart.svg" alt="" />
+                                    </span>
+                                    <span className={styles.resultCardAction}>
+                                      <img src="/images/home-screen/icon-more.svg" alt="" />
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            </>
-                          );
+                              </>
+                            );
 
-                          return listing.url ? (
-                            <a className={styles.resultCard} href={listing.url} target="_blank" rel="noreferrer" key={listing.id}>
-                              {card}
-                            </a>
-                          ) : (
-                            <article className={styles.resultCard} key={listing.id}>
-                              {card}
-                            </article>
-                          );
-                        })}
-                      </div>
+                            return listing.url ? (
+                              <a className={styles.resultCard} href={listing.url} target="_blank" rel="noreferrer" key={listing.id}>
+                                {card}
+                              </a>
+                            ) : (
+                              <article className={styles.resultCard} key={listing.id}>
+                                {card}
+                              </article>
+                            );
+                          })}
+                        </div>
+
+                        <div className={styles.resultsEndBlock}>
+                          <p>Это всё, что мы нашли</p>
+                          <button type="button">Подписаться на обновления</button>
+                        </div>
+                      </>
                     ) : (
                       <p className={styles.resultsEmpty}>Real Avito listing photos are not available yet</p>
                     )}
