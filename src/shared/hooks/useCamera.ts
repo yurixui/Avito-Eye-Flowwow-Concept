@@ -2,6 +2,57 @@ import { useEffect, useRef, useState } from "react";
 
 type CameraState = "idle" | "requesting" | "ready" | "denied" | "unsupported";
 
+const HIGH_QUALITY_VIDEO_CONSTRAINTS: MediaTrackConstraints = {
+  facingMode: { ideal: "environment" },
+  width: { ideal: 1920 },
+  height: { ideal: 1080 },
+  frameRate: { ideal: 60, max: 60 },
+};
+
+const FALLBACK_VIDEO_CONSTRAINTS: MediaTrackConstraints = {
+  facingMode: { ideal: "environment" },
+  width: { ideal: 1280 },
+  height: { ideal: 720 },
+  frameRate: { ideal: 30, max: 30 },
+};
+
+function getVideoConstraints(facingMode: "environment" | "user", highQuality = true): MediaTrackConstraints {
+  const baseConstraints = highQuality ? HIGH_QUALITY_VIDEO_CONSTRAINTS : FALLBACK_VIDEO_CONSTRAINTS;
+
+  return {
+    ...baseConstraints,
+    facingMode: { ideal: facingMode },
+  };
+}
+
+async function tuneCameraTrack(stream: MediaStream) {
+  const track = stream.getVideoTracks()[0];
+  if (!track?.applyConstraints) return;
+
+  try {
+    const capabilities = track.getCapabilities?.();
+    const frameRateMax = capabilities?.frameRate?.max;
+    const widthMax = capabilities?.width?.max;
+    const heightMax = capabilities?.height?.max;
+
+    await track.applyConstraints({
+      width: widthMax ? { ideal: Math.min(widthMax, 1920) } : { ideal: 1920 },
+      height: heightMax ? { ideal: Math.min(heightMax, 1080) } : { ideal: 1080 },
+      frameRate: frameRateMax ? { ideal: Math.min(frameRateMax, 60), max: Math.min(frameRateMax, 60) } : { ideal: 60, max: 60 },
+    });
+  } catch {
+    try {
+      await track.applyConstraints({
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: 30, max: 30 },
+      });
+    } catch {
+      // Browser-selected camera settings are still usable if tuning is rejected.
+    }
+  }
+}
+
 // Wraps getUserMedia: exposes permission state plus a <video> ref, and
 // attaches the live stream to that video once it's actually in the DOM.
 //
@@ -25,13 +76,27 @@ export function useCamera(facingMode: "environment" | "user" = "environment") {
     let cancelled = false;
     setState("requesting");
 
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode }, audio: false })
-      .then((s) => {
+    const openCamera = async () => {
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: getVideoConstraints(facingMode, true),
+          audio: false,
+        });
+      } catch {
+        return navigator.mediaDevices.getUserMedia({
+          video: getVideoConstraints(facingMode, false),
+          audio: false,
+        });
+      }
+    };
+
+    openCamera()
+      .then(async (s) => {
         if (cancelled) {
           s.getTracks().forEach((t) => t.stop());
           return;
         }
+        await tuneCameraTrack(s);
         streamRef.current = s;
         setState("ready");
       })
@@ -50,6 +115,9 @@ export function useCamera(facingMode: "environment" | "user" = "environment") {
   useEffect(() => {
     if (state === "ready" && videoRef.current && streamRef.current) {
       videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {
+        // Autoplay can briefly reject while Safari is attaching the stream.
+      });
     }
   }, [state]);
 
