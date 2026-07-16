@@ -8,6 +8,10 @@ import styles from "./CameraScreen.module.css";
 
 const DESIGN_WIDTH = 375;
 const DESIGN_HEIGHT = 812;
+const RESULT_SHEET_EXPANDED_OFFSET = -276;
+const RESULT_SHEET_EXPAND_THRESHOLD = -72;
+const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
+const RESULT_SHEET_CLOSE_THRESHOLD = 96;
 const VISION_API_URL =
   import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://presently-uploaded-brilliant-singles.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
@@ -468,6 +472,7 @@ export function CameraScreen() {
   const [sheetOffset, setSheetOffset] = useState(0);
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const [isSheetClosing, setIsSheetClosing] = useState(false);
+  const [isSheetExpanded, setIsSheetExpanded] = useState(false);
   const [hasSheetEntered, setHasSheetEntered] = useState(false);
   const [isGradientVisible, setIsGradientVisible] = useState(false);
   const [isGradientLeaving, setIsGradientLeaving] = useState(false);
@@ -499,7 +504,7 @@ export function CameraScreen() {
     top: `${objectBox.y + objectBox.height / 2 - 12}px`,
   } satisfies CSSProperties;
   const processSheetStyle =
-    sheetOffset > 0
+    sheetOffset !== 0
       ? ({
           transform: `translate3d(0, ${sheetOffset}px, 0)`,
         } satisfies CSSProperties)
@@ -519,6 +524,7 @@ export function CameraScreen() {
     setSheetOffset(0);
     setIsSheetDragging(false);
     setIsSheetClosing(false);
+    setIsSheetExpanded(false);
     setHasSheetEntered(false);
     setIsGradientVisible(true);
     setIsGradientLeaving(false);
@@ -560,6 +566,7 @@ export function CameraScreen() {
     requestIdRef.current += 1;
     setIsSheetClosing(false);
     setIsSheetDragging(false);
+    setIsSheetExpanded(false);
     setHasSheetEntered(false);
     setSheetOffset(0);
     setIsGradientVisible(false);
@@ -597,23 +604,41 @@ export function CameraScreen() {
   const moveSheetDrag = (clientY: number) => {
     if (dragStartYRef.current === null || isSheetClosing) return;
 
-    const nextOffset = Math.max(0, dragBaseOffsetRef.current + clientY - dragStartYRef.current);
-    setSheetOffset(Math.min(nextOffset, DESIGN_HEIGHT + 80));
+    const minOffset = isResult ? RESULT_SHEET_EXPANDED_OFFSET : 0;
+    const nextOffset = dragBaseOffsetRef.current + clientY - dragStartYRef.current;
+    const clampedOffset = Math.max(minOffset, Math.min(nextOffset, DESIGN_HEIGHT + 80));
+    setSheetOffset(clampedOffset);
   };
 
   const finishSheetDrag = (clientY: number) => {
     if (dragStartYRef.current === null) return;
 
-    const finalOffset = Math.max(0, dragBaseOffsetRef.current + clientY - dragStartYRef.current);
+    const minOffset = isResult ? RESULT_SHEET_EXPANDED_OFFSET : 0;
+    const rawOffset = dragBaseOffsetRef.current + clientY - dragStartYRef.current;
+    const finalOffset = Math.max(minOffset, Math.min(rawOffset, DESIGN_HEIGHT + 80));
     dragStartYRef.current = null;
     dragPointerIdRef.current = null;
     dragTouchIdRef.current = null;
     setIsSheetDragging(false);
 
-    if (finalOffset > 96) {
+    if (finalOffset > RESULT_SHEET_CLOSE_THRESHOLD) {
       setSheetOffset(finalOffset);
       closeProcessSheet();
       return;
+    }
+
+    if (isResult) {
+      const shouldExpand = isSheetExpanded
+        ? finalOffset < RESULT_SHEET_COLLAPSE_THRESHOLD
+        : finalOffset < RESULT_SHEET_EXPAND_THRESHOLD;
+
+      if (shouldExpand) {
+        setIsSheetExpanded(true);
+        setSheetOffset(RESULT_SHEET_EXPANDED_OFFSET);
+        return;
+      }
+
+      setIsSheetExpanded(false);
     }
 
     setSheetOffset(0);
@@ -648,6 +673,15 @@ export function CameraScreen() {
 
   const handleSheetTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (!isProcessing || isSheetClosing || event.touches.length === 0) return;
+    const target = event.target;
+
+    if (
+      isSheetExpanded &&
+      target instanceof HTMLElement &&
+      (target.closest(`.${styles.resultsGrid}`) || target.closest(`.${styles.resultCard}`))
+    ) {
+      return;
+    }
 
     const touch = event.touches[0];
     dragTouchIdRef.current = touch.identifier;
@@ -775,7 +809,7 @@ export function CameraScreen() {
             <img className={styles.objectDot} style={objectDotStyle} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div
-              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${hasSheetEntered ? styles.processSheetEntered : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
+              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetExpanded ? styles.processSheetExpanded : ""} ${hasSheetEntered ? styles.processSheetEntered : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
               style={processSheetStyle}
               onPointerDown={handleSheetPointerDown}
               onPointerMove={handleSheetPointerMove}

@@ -474,6 +474,11 @@
   overflow: hidden;
 }
 
+.processSheetExpanded {
+  height: 715px;
+  touch-action: pan-y;
+}
+
 .processSheetEntered {
   animation: none;
 }
@@ -544,6 +549,17 @@
   background: #ffffff;
 }
 
+.processSheetExpanded .resultContent {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+  padding: 0 8px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .resultSearchBar {
   position: absolute;
   top: 0;
@@ -560,6 +576,13 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
+}
+
+.processSheetExpanded .resultSearchBar {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
 }
 
 .resultPhoto {
@@ -608,6 +631,14 @@
   flex-direction: column;
   align-items: center;
   gap: 24px;
+}
+
+.processSheetExpanded .objectInfo {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
+  margin-top: 48px;
 }
 
 .objectNameGroup {
@@ -699,6 +730,15 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+
+.processSheetExpanded .resultsBlock {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
+  margin-top: 42px;
+  padding-bottom: 24px;
 }
 
 .resultsBlock h3 {
