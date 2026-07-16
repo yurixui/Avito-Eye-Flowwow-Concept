@@ -93,6 +93,13 @@ function cleanModelLabel(label?: string) {
     .trim();
 }
 
+function capitalizeTitle(title: string) {
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) return trimmedTitle;
+
+  return trimmedTitle.charAt(0).toLocaleUpperCase("ru-RU") + trimmedTitle.slice(1);
+}
+
 function getObjectSummary(label?: string): ObjectSummary {
   const cleanLabel = cleanModelLabel(label).toLowerCase();
 
@@ -143,7 +150,7 @@ function getObjectSummary(label?: string): ObjectSummary {
   }));
 
   return {
-    title,
+    title: capitalizeTitle(title),
     category: "Товары",
     subcategory: "Разное",
     count: listings.length,
@@ -157,6 +164,7 @@ function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
 
   return {
     ...summary,
+    title: capitalizeTitle(summary.title),
     listings,
     count: result?.avitoCount ?? listings.length,
   };
