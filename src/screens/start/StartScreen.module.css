@@ -52,7 +52,7 @@
    instead of left:50%/translateX hacks. */
 .content {
   position: absolute;
-  top: 20.4084%; /* 165.71 / 812 */
+  top: calc(20.4084% + 20px); /* 165.71 / 812 + viewport clearance */
   left: 0;
   right: 0;
   display: flex;
