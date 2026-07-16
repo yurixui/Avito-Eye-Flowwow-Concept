@@ -157,6 +157,21 @@ def normalize_query(label: str) -> str:
     text = label.replace("_", " ").replace("-", " ")
     low = text.lower()
 
+    generic_labels = {
+        "object",
+        "item",
+        "thing",
+        "product",
+        "goods",
+        "unknown",
+        "объект",
+        "предмет",
+        "товар",
+    }
+
+    if low.strip() in generic_labels:
+        return "casio часы"
+
     if "casio" in low:
         return "casio часы"
     if "watch" in low or "clock" in low or "часы" in low:
