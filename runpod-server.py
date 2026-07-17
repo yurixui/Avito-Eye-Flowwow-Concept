@@ -141,6 +141,39 @@ DEMO_IPHONE_LISTINGS = [
     },
 ]
 
+DEMO_RING_LISTINGS = [
+    {
+        "id": "silver-ring-1",
+        "title": "Кольцо Maison Margiela MM6 Numeric Tabi",
+        "price": "928 ₽",
+        "image": "https://50.img.avito.st/image/1/1.6tTkn7a4Rj3SKMQwvMSTotA_RDtaPsQr0jNEP1Q2TjdS.dJohVcETmD7DPOS89oUcpAreQe3gjgo1BImBXuL8JaU",
+    },
+    {
+        "id": "silver-ring-2",
+        "title": "Кольцо Maison Martin Margiela Оригинал",
+        "price": "13 636 ₽",
+        "image": "https://70.img.avito.st/image/1/1._p6SW7a4Unek7NB64hywvcf6UHEs-tBhpPdQdSLyWn0k.hJ8djkf5EedKzTuCt6QYx232N_Ov0SAy_aLIH553AYA",
+    },
+    {
+        "id": "silver-ring-3",
+        "title": "Кольцо Maison Margiela MM6",
+        "price": "984 ₽",
+        "image": "https://10.img.avito.st/image/1/1.IzvjG7a4j9LVrA3fqVcqNdm7jdRdug3E1beN0FOyh9hV.knuKPpXD86X9Vyz7tHwApeSZJ3u9xuDDjAiJcn6aJHk?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "silver-ring-4",
+        "title": "Кольцо maison margiela",
+        "price": "564 ₽",
+        "image": "https://50.img.avito.st/image/1/1.lYG0Kra4OWiCnbtlknyYt5SKO24Ki7t-goY7agSDMWIC.WDTcm80C6lKQjzqe5lpI9YDjpBK_m3aZVcHRaqkvvIE",
+    },
+    {
+        "id": "silver-ring-5",
+        "title": "Кольцо maison margiela",
+        "price": "653 ₽",
+        "image": "https://00.img.avito.st/image/1/1.lILfU7a4OGvp5Lpm-22h55ryOm1h8rp96f86aW_6MGFp.866ezpT_wVELIbD9Mbfy_cpi4S0cVzVsf1iuTGySMEA?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+]
+
 print("Loading A-Vision processor...")
 processor = AutoProcessor.from_pretrained(MODEL_DIR, trust_remote_code=True)
 
@@ -191,6 +224,8 @@ def normalize_query(label: str) -> str:
         return "\u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430"
     if "phone" in low or "iphone" in low or "mobile" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "\u0441\u043c\u0430\u0440\u0442\u0444\u043e\u043d" in low or "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "\u043c\u043e\u0431\u0438\u043b\u044c\u043d" in low:
         return "iPhone 16"
+    if "ring" in low or "\u043a\u043e\u043b\u044c\u0446" in low or "\u043a\u043e\u043b\u0435\u0447\u043a" in low or "\u043f\u0435\u0440\u0441\u0442" in low:
+        return "\u043a\u043e\u043b\u044c\u0446\u043e \u0441\u0435\u0440\u0435\u0431\u0440\u044f\u043d\u043e\u0435"
     if "headphone" in low or "airpods" in low or "\u043d\u0430\u0443\u0448" in low:
         return "\u043d\u0430\u0443\u0448\u043d\u0438\u043a\u0438"
     if "table" in low or "desk" in low or "\u0441\u0442\u043e\u043b" in low:
@@ -218,6 +253,8 @@ def category_from_query(query: str) -> str:
         return "\u0418\u0433\u0440\u0443\u0448\u043a\u0438"
     if "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "iphone" in low:
         return "\u0422\u0435\u043b\u0435\u0444\u043e\u043d\u044b"
+    if "\u043a\u043e\u043b\u044c\u0446" in low or "\u043f\u0435\u0440\u0441\u0442" in low or "ring" in low:
+        return "\u0423\u043a\u0440\u0430\u0448\u0435\u043d\u0438\u044f"
     if "\u043d\u0430\u0443\u0448" in low or "airpods" in low:
         return "\u0410\u0443\u0434\u0438\u043e"
     if "\u0441\u0442\u043e\u043b" in low:
@@ -235,6 +272,8 @@ def listings_for_query(query: str):
         return DEMO_CAP_LISTINGS
     if "iphone" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "phone" in low or "mobile" in low or "\u0441\u043c\u0430\u0440\u0442\u0444\u043e\u043d" in low or "\u043c\u043e\u0431\u0438\u043b\u044c\u043d" in low:
         return DEMO_IPHONE_LISTINGS
+    if "\u043a\u043e\u043b\u044c\u0446" in low or "\u043f\u0435\u0440\u0441\u0442" in low or "ring" in low:
+        return DEMO_RING_LISTINGS
 
     return []
 
