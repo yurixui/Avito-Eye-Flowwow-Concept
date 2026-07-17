@@ -96,6 +96,51 @@ DEMO_CAP_LISTINGS = [
     },
 ]
 
+DEMO_IPHONE_LISTINGS = [
+    {
+        "id": "iphone-16-1",
+        "title": "iPhone 16, 256 ГБ",
+        "price": "46 590 ₽",
+        "image": "https://20.img.avito.st/image/1/1.Vb9imLa4-VZUL3tbRKVm7Tg5-1DcOXtAVDT7VNIx8VzU.b5md78aUHefEJDNsXCZ3_AhAL8SnVDatAr5sWnps0Cw?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "iphone-16-2",
+        "title": "iPhone 16, 256 ГБ",
+        "price": "37 900 ₽",
+        "image": "https://00.img.avito.st/image/1/1.OLeS47a4lF6kVBZT7vNbhLhDllgsQhZIpE-WXCJKnFQk.ApS9BS9S2hdehp0sUh7s6x7xZvwtJuCqMkSyxPuTabc?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "iphone-16-3",
+        "title": "iPhone 16, 256 ГБ, 2 SIM",
+        "price": "55 500 ₽",
+        "image": "https://20.img.avito.st/image/1/1.rTE68ra4AdgMRYPVbIzGIBdSA96EU4PODF4D2opbCdKM.L9Bo6f17UYzPDQj6kGwNOl5pXc8pG4BezxXhU4XAB-0?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "iphone-16-4",
+        "title": "iPhone 16, 128 ГБ, SIM + eSIM",
+        "price": "57 890 ₽",
+        "image": "https://90.img.avito.st/image/1/1.rxI2m7a4A_sALIH2ZL3IehM7Af2IOoHtADcB-YYyC_GA.oa7yPYqNuc4nkvLsQPaxNZklRLb1ZXjpoYS_01HKM5E",
+    },
+    {
+        "id": "iphone-16-5",
+        "title": "iPhone 16, 256 ГБ",
+        "price": "39 200 ₽",
+        "image": "https://00.img.avito.st/image/1/1.Ya82aba4zUYA3k9LeBgikhzJz0CIyE9QAMXPRIbAxUyA.nypiTs7YhzDO0Mx147ef1lGJfMe4NlmUmw7qHW6cBJw?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "iphone-16-6",
+        "title": "iPhone 16, 128 ГБ, SIM + eSIM",
+        "price": "51 700 ₽",
+        "image": "https://90.img.avito.st/image/1/1.2PraZra4dBPs0fYe5mGnhfjGdhVkx_YF7Mp2EWrPfBls.DWGHmDQsgo4KdVOFfpYPv2aUQJUAqIrtqFhvJbpUXDA",
+    },
+    {
+        "id": "iphone-16-7",
+        "title": "iPhone 16, 256 ГБ, 2 SIM",
+        "price": "57 990 ₽",
+        "image": "https://20.img.avito.st/image/1/1.qg1Elra4BuRyIYTpHMy0T2U2BOL6N4TycjoE5vQ_Du7y.A4N479rVoZYFz2wbsQ_EXEI8lS4Sgmg2skhjC0jJa8k?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+]
+
 print("Loading A-Vision processor...")
 processor = AutoProcessor.from_pretrained(MODEL_DIR, trust_remote_code=True)
 
@@ -144,8 +189,8 @@ def normalize_query(label: str) -> str:
         return "\u0438\u0433\u0440\u0443\u0448\u0435\u0447\u043d\u0430\u044f \u043c\u0430\u0448\u0438\u043d\u043a\u0430"
     if "keyboard" in low or "\u043a\u043b\u0430\u0432\u0438\u0430\u0442" in low:
         return "\u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u0430"
-    if "phone" in low or "iphone" in low or "\u0441\u043c\u0430\u0440\u0442\u0444\u043e\u043d" in low or "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low:
-        return "\u0442\u0435\u043b\u0435\u0444\u043e\u043d"
+    if "phone" in low or "iphone" in low or "mobile" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "\u0441\u043c\u0430\u0440\u0442\u0444\u043e\u043d" in low or "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "\u043c\u043e\u0431\u0438\u043b\u044c\u043d" in low:
+        return "iPhone 16"
     if "headphone" in low or "airpods" in low or "\u043d\u0430\u0443\u0448" in low:
         return "\u043d\u0430\u0443\u0448\u043d\u0438\u043a\u0438"
     if "table" in low or "desk" in low or "\u0441\u0442\u043e\u043b" in low:
@@ -171,7 +216,7 @@ def category_from_query(query: str) -> str:
         return "\u041a\u043e\u043c\u043f\u044c\u044e\u0442\u0435\u0440\u043d\u0430\u044f \u0442\u0435\u0445\u043d\u0438\u043a\u0430"
     if "\u043c\u0430\u0448\u0438\u043d" in low or "toy" in low:
         return "\u0418\u0433\u0440\u0443\u0448\u043a\u0438"
-    if "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "iphone" in low:
+    if "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "iphone" in low:
         return "\u0422\u0435\u043b\u0435\u0444\u043e\u043d\u044b"
     if "\u043d\u0430\u0443\u0448" in low or "airpods" in low:
         return "\u0410\u0443\u0434\u0438\u043e"
@@ -188,6 +233,8 @@ def listings_for_query(query: str):
         return DEMO_CASIO_LISTINGS
     if "\u043a\u0435\u043f" in low or "\u043f\u0430\u043f\u0430" in low or "cap" in low or "hat" in low or "baseball" in low:
         return DEMO_CAP_LISTINGS
+    if "iphone" in low or "\u0430\u0439\u0444\u043e\u043d" in low or "\u0442\u0435\u043b\u0435\u0444\u043e\u043d" in low or "phone" in low or "mobile" in low or "\u0441\u043c\u0430\u0440\u0442\u0444\u043e\u043d" in low or "\u043c\u043e\u0431\u0438\u043b\u044c\u043d" in low:
+        return DEMO_IPHONE_LISTINGS
 
     return []
 
