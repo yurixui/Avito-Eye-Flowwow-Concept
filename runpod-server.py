@@ -174,6 +174,33 @@ DEMO_RING_LISTINGS = [
     },
 ]
 
+DEMO_GLASSES_LISTINGS = [
+    {
+        "id": "pye-glasses-1",
+        "title": "Pye очки",
+        "price": "4 836 ₽",
+        "image": "https://50.img.avito.st/image/1/1.L5S687a4g32MRAFw6L80s5VTgXsEUgFrjF-Bfwpai3cM.Lt0B4U88mcSNM9xPx3WfGDgq8g_6cFedKWyAA9hFCN4",
+    },
+    {
+        "id": "pye-glasses-2",
+        "title": "Очки pye",
+        "price": "6 836 ₽",
+        "image": "https://60.img.avito.st/image/1/1.gU6MsLa4Lae6B6-qgvrHTa8QL6EyEa-xuhwvpTwZJa06.oT30jxHn-TRYXeowLZwhbjTbQ8Lfgf4Q5c8Iqu2NOKs",
+    },
+    {
+        "id": "pye-glasses-3",
+        "title": "Очки PYE theo",
+        "price": "3 336 ₽",
+        "image": "https://20.img.avito.st/image/1/1.vOte0ba4EAJoZpIPKoe_7nNxEgTgcJIUaH0SAO54GAjo.p68T8g_kcaObToTExCHaQJefsQQZp3lgYbvhZ42Wmq0?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "pye-glasses-4",
+        "title": "Очки PYE",
+        "price": "7 336 ₽",
+        "image": "https://80.img.avito.st/image/1/1.xHjX0La4aJHhZ-qc0-eFEvZwapdpceqH4Xxqk2d5YJth.RV27O-19sN_IGKpa1W1iyh9PICzSXrAe6D7AUF9IiJ0",
+    },
+]
+
 print("Loading A-Vision processor...")
 processor = AutoProcessor.from_pretrained(MODEL_DIR, trust_remote_code=True)
 
@@ -226,6 +253,8 @@ def normalize_query(label: str) -> str:
         return "iPhone 16"
     if "ring" in low or "\u043a\u043e\u043b\u044c\u0446" in low or "\u043a\u043e\u043b\u0435\u0447\u043a" in low or "\u043f\u0435\u0440\u0441\u0442" in low:
         return "\u043a\u043e\u043b\u044c\u0446\u043e \u0441\u0435\u0440\u0435\u0431\u0440\u044f\u043d\u043e\u0435"
+    if "glasses" in low or "eyewear" in low or "sunglasses" in low or "spectacles" in low or "specs" in low or "pye" in low or "\u043e\u0447\u043a" in low:
+        return "\u043e\u0447\u043a\u0438 PYE"
     if "headphone" in low or "airpods" in low or "\u043d\u0430\u0443\u0448" in low:
         return "\u043d\u0430\u0443\u0448\u043d\u0438\u043a\u0438"
     if "table" in low or "desk" in low or "\u0441\u0442\u043e\u043b" in low:
@@ -255,6 +284,8 @@ def category_from_query(query: str) -> str:
         return "\u0422\u0435\u043b\u0435\u0444\u043e\u043d\u044b"
     if "\u043a\u043e\u043b\u044c\u0446" in low or "\u043f\u0435\u0440\u0441\u0442" in low or "ring" in low:
         return "\u0423\u043a\u0440\u0430\u0448\u0435\u043d\u0438\u044f"
+    if "\u043e\u0447\u043a" in low or "glasses" in low or "eyewear" in low or "pye" in low:
+        return "\u0410\u043a\u0441\u0435\u0441\u0441\u0443\u0430\u0440\u044b"
     if "\u043d\u0430\u0443\u0448" in low or "airpods" in low:
         return "\u0410\u0443\u0434\u0438\u043e"
     if "\u0441\u0442\u043e\u043b" in low:
@@ -274,6 +305,8 @@ def listings_for_query(query: str):
         return DEMO_IPHONE_LISTINGS
     if "\u043a\u043e\u043b\u044c\u0446" in low or "\u043f\u0435\u0440\u0441\u0442" in low or "ring" in low:
         return DEMO_RING_LISTINGS
+    if "\u043e\u0447\u043a" in low or "glasses" in low or "eyewear" in low or "sunglasses" in low or "spectacles" in low or "specs" in low or "pye" in low:
+        return DEMO_GLASSES_LISTINGS
 
     return []
 
