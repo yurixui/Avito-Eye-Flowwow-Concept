@@ -908,8 +908,16 @@ export function CameraScreen() {
                         </div>
 
                         <div className={styles.resultsEndBlock}>
-                          <p>Это всё, что мы нашли</p>
-                          <button type="button">Подписаться на обновления</button>
+                          <div className={styles.resultsEndText}>
+                            <p className={styles.resultsEndTitle}>Это всё, что мы нашли</p>
+                            <p className={styles.resultsEndDescription}>
+                              Но вы можете подписаться на обновления по этому запросу, и мы уведомим вас, когда объявления появятся
+                            </p>
+                          </div>
+                          <button className={styles.resultsEndButton} type="button">
+                            Подписаться на обновления
+                            <span className={styles.notificationDot} aria-hidden />
+                          </button>
                         </div>
                       </>
                     ) : (
