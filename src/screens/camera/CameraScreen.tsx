@@ -13,7 +13,7 @@ const RESULT_SHEET_EXPAND_THRESHOLD = -72;
 const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
 const VISION_API_URL =
-  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://presently-uploaded-brilliant-singles.trycloudflare.com";
+  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://reprint-corresponding-phrases-challenged.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
 
 type AnalysisState = "idle" | "thinking" | "found" | "error";
