@@ -12,7 +12,6 @@ const RESULT_SHEET_EXPANDED_OFFSET = -256;
 const RESULT_SHEET_EXPAND_THRESHOLD = -72;
 const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
-const MIN_ANALYSIS_DURATION_MS = 2400;
 const VISION_API_URL =
   import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://reprint-corresponding-phrases-challenged.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
@@ -35,7 +34,6 @@ interface FrameSize {
 
 interface VisionResult {
   label: string;
-  category?: string;
   confidence?: number;
   bbox?: DetectionBox | number[] | null;
   avitoCount?: number;
@@ -160,69 +158,13 @@ function getObjectSummary(label?: string): ObjectSummary {
   };
 }
 
-function getAvitoCategoryTrail(label?: string, apiCategory?: string) {
-  const cleanLabel = cleanModelLabel(label).toLowerCase();
-  const cleanCategory = cleanModelLabel(apiCategory).toLowerCase();
-
-  if (cleanLabel.includes("casio") || cleanLabel.includes("watch") || cleanLabel.includes("час")) {
-    return { category: "Личные вещи", subcategory: "Часы и украшения" };
-  }
-
-  if (
-    cleanLabel.includes("кеп") ||
-    cleanLabel.includes("папа") ||
-    cleanLabel.includes("cap") ||
-    cleanLabel.includes("hat") ||
-    cleanLabel.includes("baseball")
-  ) {
-    return { category: "Одежда, обувь, аксессуары", subcategory: "Головные уборы" };
-  }
-
-  if (
-    cleanLabel.includes("iphone") ||
-    cleanLabel.includes("айфон") ||
-    cleanLabel.includes("телефон") ||
-    cleanLabel.includes("phone") ||
-    cleanLabel.includes("smartphone") ||
-    cleanLabel.includes("mobile")
-  ) {
-    return { category: "Электроника", subcategory: "Мобильные телефоны" };
-  }
-
-  if (cleanLabel.includes("кольц") || cleanLabel.includes("перст") || cleanLabel.includes("ring")) {
-    return { category: "Часы и украшения", subcategory: "Кольца и перстни" };
-  }
-
-  if (
-    cleanLabel.includes("очки") ||
-    cleanLabel.includes("pye") ||
-    cleanLabel.includes("glasses") ||
-    cleanLabel.includes("eyewear") ||
-    cleanLabel.includes("sunglasses") ||
-    cleanLabel.includes("spectacles") ||
-    cleanLabel.includes("specs")
-  ) {
-    return { category: "Одежда, обувь, аксессуары", subcategory: "Очки" };
-  }
-
-  if (cleanCategory.includes("телефон")) return { category: "Электроника", subcategory: "Мобильные телефоны" };
-  if (cleanCategory.includes("одежда")) return { category: "Одежда, обувь, аксессуары", subcategory: "Разное" };
-  if (cleanCategory.includes("украшен")) return { category: "Личные вещи", subcategory: "Часы и украшения" };
-  if (cleanCategory.includes("аксессуар")) return { category: "Личные вещи", subcategory: "Аксессуары" };
-
-  return { category: "Товары", subcategory: "Разное" };
-}
-
 function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
   const summary = getObjectSummary(result?.label);
   const listings = normalizeListings(result?.listings);
-  const categoryTrail = getAvitoCategoryTrail(result?.label, result?.category);
 
   return {
     ...summary,
     title: capitalizeTitle(summary.title),
-    category: categoryTrail.category,
-    subcategory: categoryTrail.subcategory,
     listings,
     count: result?.avitoCount ?? listings.length,
   };
@@ -519,18 +461,6 @@ async function analyzeFrame(blob: Blob): Promise<VisionResult> {
   return response.json();
 }
 
-function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-async function waitForMinimumAnalysis(startedAt: number) {
-  const remaining = MIN_ANALYSIS_DURATION_MS - (performance.now() - startedAt);
-
-  if (remaining > 0) {
-    await wait(remaining);
-  }
-}
-
 function normalizeBox(result: VisionResult | null, sourceSize?: FrameSize | null): DetectionBox {
   return normalizeDetectionBox(result?.bbox, sourceSize ?? undefined);
 }
@@ -608,11 +538,9 @@ export function CameraScreen() {
     setIsGradientLeaving(false);
     setAnalysisState("thinking");
     setVisionResult(null);
-    const analysisStartedAt = performance.now();
 
     try {
       const result = await analyzeFrame(frame.blob);
-      await waitForMinimumAnalysis(analysisStartedAt);
       if (requestIdRef.current !== requestId) return;
 
       setVisionResult({
@@ -626,7 +554,6 @@ export function CameraScreen() {
         setIsGradientLeaving(false);
       }, 420);
     } catch {
-      await waitForMinimumAnalysis(analysisStartedAt);
       if (requestIdRef.current !== requestId) return;
 
       setVisionResult({
@@ -634,9 +561,6 @@ export function CameraScreen() {
         confidence: 0,
         bbox: frame.bbox,
       });
-      setVisionResult((previousResult) =>
-        previousResult ? { ...previousResult, label: "Не удалось распознать" } : previousResult,
-      );
       setAnalysisState("error");
       setIsGradientLeaving(true);
       window.setTimeout(() => {
