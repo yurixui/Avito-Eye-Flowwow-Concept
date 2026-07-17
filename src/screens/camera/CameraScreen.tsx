@@ -35,6 +35,7 @@ interface FrameSize {
 
 interface VisionResult {
   label: string;
+  category?: string;
   confidence?: number;
   bbox?: DetectionBox | number[] | null;
   avitoCount?: number;
@@ -159,13 +160,69 @@ function getObjectSummary(label?: string): ObjectSummary {
   };
 }
 
+function getAvitoCategoryTrail(label?: string, apiCategory?: string) {
+  const cleanLabel = cleanModelLabel(label).toLowerCase();
+  const cleanCategory = cleanModelLabel(apiCategory).toLowerCase();
+
+  if (cleanLabel.includes("casio") || cleanLabel.includes("watch") || cleanLabel.includes("час")) {
+    return { category: "Личные вещи", subcategory: "Часы и украшения" };
+  }
+
+  if (
+    cleanLabel.includes("кеп") ||
+    cleanLabel.includes("папа") ||
+    cleanLabel.includes("cap") ||
+    cleanLabel.includes("hat") ||
+    cleanLabel.includes("baseball")
+  ) {
+    return { category: "Одежда, обувь, аксессуары", subcategory: "Головные уборы" };
+  }
+
+  if (
+    cleanLabel.includes("iphone") ||
+    cleanLabel.includes("айфон") ||
+    cleanLabel.includes("телефон") ||
+    cleanLabel.includes("phone") ||
+    cleanLabel.includes("smartphone") ||
+    cleanLabel.includes("mobile")
+  ) {
+    return { category: "Электроника", subcategory: "Мобильные телефоны" };
+  }
+
+  if (cleanLabel.includes("кольц") || cleanLabel.includes("перст") || cleanLabel.includes("ring")) {
+    return { category: "Часы и украшения", subcategory: "Кольца и перстни" };
+  }
+
+  if (
+    cleanLabel.includes("очки") ||
+    cleanLabel.includes("pye") ||
+    cleanLabel.includes("glasses") ||
+    cleanLabel.includes("eyewear") ||
+    cleanLabel.includes("sunglasses") ||
+    cleanLabel.includes("spectacles") ||
+    cleanLabel.includes("specs")
+  ) {
+    return { category: "Одежда, обувь, аксессуары", subcategory: "Очки" };
+  }
+
+  if (cleanCategory.includes("телефон")) return { category: "Электроника", subcategory: "Мобильные телефоны" };
+  if (cleanCategory.includes("одежда")) return { category: "Одежда, обувь, аксессуары", subcategory: "Разное" };
+  if (cleanCategory.includes("украшен")) return { category: "Личные вещи", subcategory: "Часы и украшения" };
+  if (cleanCategory.includes("аксессуар")) return { category: "Личные вещи", subcategory: "Аксессуары" };
+
+  return { category: "Товары", subcategory: "Разное" };
+}
+
 function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
   const summary = getObjectSummary(result?.label);
   const listings = normalizeListings(result?.listings);
+  const categoryTrail = getAvitoCategoryTrail(result?.label, result?.category);
 
   return {
     ...summary,
     title: capitalizeTitle(summary.title),
+    category: categoryTrail.category,
+    subcategory: categoryTrail.subcategory,
     listings,
     count: result?.avitoCount ?? listings.length,
   };
@@ -577,6 +634,9 @@ export function CameraScreen() {
         confidence: 0,
         bbox: frame.bbox,
       });
+      setVisionResult((previousResult) =>
+        previousResult ? { ...previousResult, label: "Не удалось распознать" } : previousResult,
+      );
       setAnalysisState("error");
       setIsGradientLeaving(true);
       window.setTimeout(() => {
