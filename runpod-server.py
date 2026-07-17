@@ -57,6 +57,45 @@ DEMO_CASIO_LISTINGS = [
     },
 ]
 
+DEMO_CAP_LISTINGS = [
+    {
+        "id": "papa-cap-1",
+        "title": "Кепка Папа оригинал",
+        "price": "4 836 ₽",
+        "image": "https://60.img.avito.st/image/1/1.Bg59i7a4qudLPCjqff84dksrqOHDKijxSyeo5c0iou3L.wjFz3QBmy4qxmFJHuGGs3qtiwwdYWodb7wNa4Mh26jQ",
+    },
+    {
+        "id": "papa-cap-2",
+        "title": "Кепка Папа хаски Папино Молоко",
+        "price": "5 336 ₽",
+        "image": "https://70.img.avito.st/image/1/1.Z7Skhba4y12SMklQ5vR8ouwkyVsaJElLkinJXxQsw1cS._uhD-3tmYeXPiXObyDDdSKPlh4WU19sTf6d0YlzrnH8",
+    },
+    {
+        "id": "papa-cap-3",
+        "title": "Кепка папа",
+        "price": "1 892 ₽",
+        "image": "https://00.img.avito.st/image/1/1.Y1cRP7a4z74niE2zW34rPTyfzbivnk2oJ5PNvKGWx7Sn.CNJ40Lj2DI1-OLnT4WBTAqhrSBrOJflKexj9_BviPVU?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "papa-cap-4",
+        "title": "Кепка папиномолоко хаски 2025",
+        "price": "3 436 ₽",
+        "image": "https://40.img.avito.st/image/1/1.n-LBMba4Mwv3hrEG80OmjeuRMQ1_kLEd950xCXGYOwF3.8r_tXpI1gVGokuQLj7Cboi-LZIs1VZ1FYDfbhpAt0gU",
+    },
+    {
+        "id": "papa-cap-5",
+        "title": "Оригинал кепочка мама",
+        "price": "6 836 ₽",
+        "image": "https://10.img.avito.st/image/1/1.YLQ2B7a4zF0AsE5QeioMuRynzluIpk5LAKvOX4auxFeA.dUEaUZBvrqcTOnGgOzO3jZm2cbZPlnnhjOQ8-eQ0PNM?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "papa-cap-6",
+        "title": "Кепки папа",
+        "price": "5 326 ₽",
+        "image": "https://90.img.avito.st/image/1/1.evsdgra41hIrNVQfZZMN9HYj1BSjI1QEKy7UEK0r3hir.pHuG97P7yhe-ylos-5o5fM0OJi-_fPgPajPtsv5ZO1g",
+    },
+]
+
 print("Loading A-Vision processor...")
 processor = AutoProcessor.from_pretrained(MODEL_DIR, trust_remote_code=True)
 
@@ -147,6 +186,8 @@ def listings_for_query(query: str):
 
     if "casio" in low or "\u0447\u0430\u0441" in low or "watch" in low:
         return DEMO_CASIO_LISTINGS
+    if "\u043a\u0435\u043f" in low or "\u043f\u0430\u043f\u0430" in low or "cap" in low or "hat" in low or "baseball" in low:
+        return DEMO_CAP_LISTINGS
 
     return []
 
