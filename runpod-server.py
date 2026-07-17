@@ -257,12 +257,24 @@ def clean_answer(text: str) -> str:
     if is_generic_label(text):
         return ""
 
-    return text or "\u0442\u043e\u0432\u0430\u0440"
+    return text or "\u043f\u043e\u0445\u043e\u0436\u0438\u0439 \u0442\u043e\u0432\u0430\u0440"
+
+
+CATEGORY_QUERIES = {
+    "watch": "casio \u0447\u0430\u0441\u044b",
+    "cap": "\u043a\u0435\u043f\u043a\u0430 \u043f\u0430\u043f\u0430",
+    "phone": "iPhone 16",
+    "ring": "\u043a\u043e\u043b\u044c\u0446\u043e \u0441\u0435\u0440\u0435\u0431\u0440\u044f\u043d\u043e\u0435",
+    "glasses": "\u043e\u0447\u043a\u0438 PYE",
+}
 
 
 def normalize_query(label: str) -> str:
     text = label.replace("_", " ").replace("-", " ")
     low = text.lower()
+
+    if low in CATEGORY_QUERIES:
+        return CATEGORY_QUERIES[low]
 
     if "casio" in low:
         return "casio \u0447\u0430\u0441\u044b"
@@ -293,7 +305,7 @@ def normalize_query(label: str) -> str:
     if len(text) > 60:
         text = text[:60].strip()
 
-    return text or "\u0442\u043e\u0432\u0430\u0440"
+    return text or "\u043f\u043e\u0445\u043e\u0436\u0438\u0439 \u0442\u043e\u0432\u0430\u0440"
 
 
 def category_from_query(query: str) -> str:
@@ -338,53 +350,106 @@ def listings_for_query(query: str):
     return []
 
 
-def analyze_image(image: Image.Image) -> str:
+def generate_answer(image: Image.Image, prompt: str, max_new_tokens: int = 40) -> str:
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "image", "image": image},
+                {"type": "text", "text": prompt},
+            ],
+        }
+    ]
+
+    text = processor.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+    inputs = processor(
+        text=[text],
+        images=[image],
+        return_tensors="pt",
+    ).to(model.device)
+
+    with torch.inference_mode():
+        output_ids = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+        )
+
+    return processor.batch_decode(
+        output_ids[:, inputs.input_ids.shape[1]:],
+        skip_special_tokens=True,
+    )[0]
+
+
+def parse_category_answer(answer: str) -> str:
+    low = answer.lower()
+    low = re.sub(r"[^a-z0-9\s]", " ", low)
+    low = re.sub(r"\s+", " ", low).strip()
+
+    category_aliases = {
+        "watch": ["watch", "watches", "clock", "casio"],
+        "cap": ["cap", "hat", "baseball cap", "papa"],
+        "phone": ["phone", "smartphone", "iphone", "mobile"],
+        "ring": ["ring", "rings", "jewelry", "jewellery"],
+        "glasses": ["glasses", "eyeglasses", "sunglasses", "spectacles", "eyewear", "pye"],
+    }
+
+    for category, aliases in category_aliases.items():
+        if any(alias in low for alias in aliases):
+            return category
+
+    return "other"
+
+
+def classify_demo_category(image: Image.Image) -> str:
+    prompt = (
+        "Look at the main visible sellable object in the photo. "
+        "Choose exactly one category from this list: watch, cap, phone, ring, glasses, other. "
+        "Use watch for wrist watches including Casio. Use cap for baseball caps and hats. "
+        "Use phone for smartphones and iPhones. Use ring for jewelry rings. "
+        "Use glasses for eyeglasses or sunglasses. "
+        "Return only one word from the list."
+    )
+    answer = generate_answer(image, prompt, max_new_tokens=8)
+    category = parse_category_answer(answer)
+    print("Vision category answer:", repr(answer), "=>", category)
+    return category
+
+
+def describe_image_product(image: Image.Image) -> str:
     prompts = [
-        "Identify the main sellable product in this photo. Answer with only a specific marketplace search query, 2-5 words. If it is a phone answer iPhone 16. If it is a cap answer кепка папа. If it is a ring answer кольцо серебряное. If it is glasses answer очки PYE. If it is a watch answer часы Casio. Never answer object, item, thing, product, goods, unknown, объект, товар, or предмет.",
-        "Назови главный товар на фото для поиска на Авито. Ответь только конкретным названием товара в 2-5 слов. Не отвечай: объект, предмет, товар, вещь, unknown.",
-        "What product is shown in the photo? Answer only with a specific product name suitable for marketplace search. Do not use generic words.",
+        (
+            "Identify the main sellable product in this photo. "
+            "Answer with only a concrete marketplace search query in 2-5 words. "
+            "Never answer object, item, thing, product, goods, unknown."
+        ),
+        (
+            "What specific product is shown in the photo? "
+            "Answer only with a short product name for marketplace search."
+        ),
     ]
 
     for prompt in prompts:
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "image", "image": image},
-                    {"type": "text", "text": prompt},
-                ],
-            }
-        ]
-
-        text = processor.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-
-        inputs = processor(
-            text=[text],
-            images=[image],
-            return_tensors="pt",
-        ).to(model.device)
-
-        with torch.inference_mode():
-            output_ids = model.generate(
-                **inputs,
-                max_new_tokens=40,
-                do_sample=False,
-            )
-
-        answer = processor.batch_decode(
-            output_ids[:, inputs.input_ids.shape[1]:],
-            skip_special_tokens=True,
-        )[0]
-
+        answer = generate_answer(image, prompt, max_new_tokens=40)
         cleaned = clean_answer(answer)
+        print("Vision free answer:", repr(answer), "=>", repr(cleaned))
         if cleaned and not is_generic_label(cleaned):
             return cleaned
 
-    return "\u0442\u043e\u0432\u0430\u0440"
+    return "\u043f\u043e\u0445\u043e\u0436\u0438\u0439 \u0442\u043e\u0432\u0430\u0440"
+
+
+def analyze_image(image: Image.Image) -> str:
+    category = classify_demo_category(image)
+    if category in CATEGORY_QUERIES:
+        return category
+
+    return describe_image_product(image)
 
 
 @app.get("/")
