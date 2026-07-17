@@ -215,6 +215,30 @@ model.eval()
 print("A-Vision ready")
 
 
+GENERIC_LABELS = {
+    "object",
+    "item",
+    "thing",
+    "product",
+    "goods",
+    "unknown",
+    "объект",
+    "предмет",
+    "товар",
+    "вещь",
+    "изделие",
+    "неизвестно",
+    "неизвестный объект",
+    "похожий товар",
+}
+
+
+def is_generic_label(text: str) -> bool:
+    normalized = re.sub(r"[^0-9A-Za-z\u0410-\u042f\u0430-\u044f\u0401\u0451\s]", " ", text.lower())
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized in GENERIC_LABELS or len(normalized) < 3
+
+
 def clean_answer(text: str) -> str:
     text = text.replace("<0x0A>", " ")
     text = re.sub(r"\[[^\]]+\]", " ", text)
@@ -229,6 +253,9 @@ def clean_answer(text: str) -> str:
 
     if len(text) > 80:
         text = text[:80].strip()
+
+    if is_generic_label(text):
+        return ""
 
     return text or "\u0442\u043e\u0432\u0430\u0440"
 
@@ -313,8 +340,9 @@ def listings_for_query(query: str):
 
 def analyze_image(image: Image.Image) -> str:
     prompts = [
-        "Identify the main sellable object in this photo. Answer with only a short marketplace search query, 2-5 words. Do not answer object, item, thing, product, goods, or unknown.",
-        "What product is shown in the photo? Answer only with a short product name suitable for Avito search.",
+        "Identify the main sellable product in this photo. Answer with only a specific marketplace search query, 2-5 words. If it is a phone answer iPhone 16. If it is a cap answer кепка папа. If it is a ring answer кольцо серебряное. If it is glasses answer очки PYE. If it is a watch answer часы Casio. Never answer object, item, thing, product, goods, unknown, объект, товар, or предмет.",
+        "Назови главный товар на фото для поиска на Авито. Ответь только конкретным названием товара в 2-5 слов. Не отвечай: объект, предмет, товар, вещь, unknown.",
+        "What product is shown in the photo? Answer only with a specific product name suitable for marketplace search. Do not use generic words.",
     ]
 
     for prompt in prompts:
@@ -353,7 +381,7 @@ def analyze_image(image: Image.Image) -> str:
         )[0]
 
         cleaned = clean_answer(answer)
-        if cleaned:
+        if cleaned and not is_generic_label(cleaned):
             return cleaned
 
     return "\u0442\u043e\u0432\u0430\u0440"
