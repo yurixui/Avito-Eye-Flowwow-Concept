@@ -12,8 +12,9 @@ const RESULT_SHEET_EXPANDED_OFFSET = -256;
 const RESULT_SHEET_EXPAND_THRESHOLD = -72;
 const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
+const MIN_ANALYSIS_DURATION_MS = 2400;
 const VISION_API_URL =
-  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://reprint-corresponding-phrases-challenged.trycloudflare.com";
+  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://substances-decision-ivory-tire.trycloudflare.com";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
 
 type AnalysisState = "idle" | "thinking" | "found" | "error";
@@ -461,6 +462,18 @@ async function analyzeFrame(blob: Blob): Promise<VisionResult> {
   return response.json();
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function waitForMinimumAnalysis(startedAt: number) {
+  const remaining = MIN_ANALYSIS_DURATION_MS - (performance.now() - startedAt);
+
+  if (remaining > 0) {
+    await wait(remaining);
+  }
+}
+
 function normalizeBox(result: VisionResult | null, sourceSize?: FrameSize | null): DetectionBox {
   return normalizeDetectionBox(result?.bbox, sourceSize ?? undefined);
 }
@@ -538,9 +551,11 @@ export function CameraScreen() {
     setIsGradientLeaving(false);
     setAnalysisState("thinking");
     setVisionResult(null);
+    const analysisStartedAt = performance.now();
 
     try {
       const result = await analyzeFrame(frame.blob);
+      await waitForMinimumAnalysis(analysisStartedAt);
       if (requestIdRef.current !== requestId) return;
 
       setVisionResult({
@@ -554,6 +569,7 @@ export function CameraScreen() {
         setIsGradientLeaving(false);
       }, 420);
     } catch {
+      await waitForMinimumAnalysis(analysisStartedAt);
       if (requestIdRef.current !== requestId) return;
 
       setVisionResult({
