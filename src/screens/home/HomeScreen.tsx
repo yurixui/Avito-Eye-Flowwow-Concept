@@ -27,12 +27,21 @@ export function HomeScreen() {
   useEffect(() => {
     if (modalDismissed) return;
 
+    let firstFrame = 0;
+    let secondFrame = 0;
+
     const timer = window.setTimeout(() => {
       setModalMounted(true);
-      window.requestAnimationFrame(() => setModalOpen(true));
+      firstFrame = window.requestAnimationFrame(() => {
+        secondFrame = window.requestAnimationFrame(() => setModalOpen(true));
+      });
     }, HOME_MODAL_DELAY_MS);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
   }, [modalDismissed]);
 
   const closeHomeModal = () => {
