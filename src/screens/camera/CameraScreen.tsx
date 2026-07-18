@@ -164,6 +164,14 @@ function getAvitoCategoryTrail(label?: string, apiCategory?: string) {
   const cleanLabel = cleanModelLabel(label).toLowerCase();
   const cleanCategory = cleanModelLabel(apiCategory).toLowerCase();
 
+  if (cleanLabel.includes("apple watch") || cleanLabel.includes("applewatch")) {
+    return { category: "Электроника", subcategory: "Смарт-часы и фитнес-браслеты" };
+  }
+
+  if (cleanLabel.includes("airpods") || cleanLabel.includes("air pods") || cleanLabel.includes("эйрпод")) {
+    return { category: "Электроника · Аудио и видео", subcategory: "Наушники" };
+  }
+
   if (cleanLabel.includes("casio") || cleanLabel.includes("watch") || cleanLabel.includes("час")) {
     return { category: "Личные вещи", subcategory: "Часы и украшения" };
   }

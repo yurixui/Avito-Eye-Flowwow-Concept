@@ -57,6 +57,72 @@ DEMO_CASIO_LISTINGS = [
     },
 ]
 
+DEMO_APPLE_WATCH_LISTINGS = [
+    {
+        "id": "apple-watch-se-2-2024-44-silver",
+        "title": "Apple Watch SE 2 (2024) 44mm Silver",
+        "price": "13 990 ₽",
+        "image": "https://80.img.avito.st/image/1/1.0oxCL7a4fmV0mPxoaljPz3CPfGP8jvxzdIN8Z_KGdm_0.jwP1e7etQqdeYE88Vyzzp9EQgOWtfwRjCU_-AOPgHbY",
+    },
+    {
+        "id": "apple-watch-series-11-46-space-grey",
+        "title": "Apple Watch Series 11, 46 mm, Space Grey Aluminium",
+        "price": "28 990 ₽",
+        "image": "https://20.img.avito.st/image/1/1.w0bB57a4b6_3UO2iy5yPQJxGbal_Ru2590ttrXFOZ6V3.MbUUQPcMbNaYk-Yx4SZ3fE7bv6cEhtOaVgBEoe0I0Qg?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "apple-watch-series-10-42-jet-black",
+        "title": "Apple Watch Series 10 42 мм Jet Black",
+        "price": "13 900 ₽",
+        "image": "https://10.img.avito.st/image/1/1.u0pVgba4F6NjNpWuL4OUH34hFaXrIJW1Yy0VoeUoH6nj.QpxIyoJbhwDofKiFbyNvl8SL3XH6v44fAyw83a10GJs?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "apple-watch-series-9-41",
+        "title": "Apple Watch Series 9 41mm",
+        "price": "12 500 ₽",
+        "image": "https://20.img.avito.st/image/1/1.IGD8dLa4jInKww6EsFgdFtPUjo9C1Q6fytiOi0zdhINK.G3pZakbgc43LGULHPHF4uDh8a7qBndXCRNfAV5JlZ6Q?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "apple-watch-se-2gen",
+        "title": "Apple Watch SE (2gen)",
+        "price": "10 905 ₽",
+        "image": "https://30.img.avito.st/image/1/1.baQGY7a4wU0w1ENAUFY6ny3Dw0u4wkNbMM_DT7bKyUew.G-uFnnGPn8aEzK6PegwqTTHiNqyDgxd95S3pZY6A6M0?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+]
+
+DEMO_AIRPODS_LISTINGS = [
+    {
+        "id": "airpods-4-original-2026-anc",
+        "title": "AirPods 4 «Оригинал» (2026) + Шумоподавление",
+        "price": "1 341 ₽",
+        "image": "https://20.img.avito.st/image/1/1.VRVkPba4-fxSinvxQgBMDESd-_ranHvqUpH7_tSU8fbS.8VvJPcSMpqa_NLo113ifroFl9tG1T0_XxftY7d-IlVg?cqp=2.TSzMy-m0u9ojo94xoNTr4TIkcUBjMu1L_y5Z6Lr-VHA-3xfoRpsvf1jN4IBF36LEO13sxOCjYv9KRoXzpmAFvKTQ",
+    },
+    {
+        "id": "airpods-pro-3-case-2026",
+        "title": "AirPods Pro 3 + Чехол (2026 Гарантия)",
+        "price": "1 554 ₽",
+        "image": "https://80.img.avito.st/image/1/1.eKY4o7a41E8OFFZCRPJf4RQD1kmGAlZZDg_WTYgK3EWO.yslFZpPXsAUNqgavwYGiFnSnuCLwidD45Wju-AFnSn4",
+    },
+    {
+        "id": "airpods-pro-2-new",
+        "title": "Беспроводные наушники Apple AirPods Pro 2 новые",
+        "price": "250 ₽",
+        "image": "https://90.img.avito.st/image/1/1.0GEgo7a4fIgWFP6FDJTlZwoDfo6eAv6eFg9-ipAKdIKW.AeeASKRVxGlW1XSgsrjUb--gKkZwv1DDVOwr8eMOV-k",
+    },
+    {
+        "id": "airpods-4-original-case",
+        "title": "AirPods 4 «Оригинал» (Гарантия + Чехол)",
+        "price": "2 235 ₽",
+        "image": "https://90.img.avito.st/image/1/1.40roaLa4T6Pe382uomfTPsnITaVWyc213sRNoVjBR6le.6kJ9SV68AqVS2AIVaXqPzxZ58Toqx43HQxdGo-MkE0E",
+    },
+    {
+        "id": "airpods-4-gift-case",
+        "title": "AirPods 4 + Подарок Чехол",
+        "price": "2 365 ₽",
+        "image": "https://40.img.avito.st/image/1/1.gOp35ra4LANBUa4Oe-DPvj1HLgXJR64VQUouAcdPJAnB.ivuEmwt2cvBHAFsSwsJsREq03nc2gG85jetwOiBRjjY",
+    },
+]
+
 DEMO_CAP_LISTINGS = [
     {
         "id": "papa-cap-1",
@@ -261,6 +327,8 @@ def clean_answer(text: str) -> str:
 
 
 CATEGORY_QUERIES = {
+    "apple_watch": "Apple Watch",
+    "airpods": "AirPods",
     "watch": "casio \u0447\u0430\u0441\u044b",
     "cap": "\u043a\u0435\u043f\u043a\u0430 \u043f\u0430\u043f\u0430",
     "phone": "iPhone 16",
@@ -276,6 +344,10 @@ def normalize_query(label: str) -> str:
     if low in CATEGORY_QUERIES:
         return CATEGORY_QUERIES[low]
 
+    if "apple watch" in low or "applewatch" in low or "\u044d\u043f\u043f\u043b \u0432\u043e\u0442\u0447" in low:
+        return "Apple Watch"
+    if "airpods" in low or "air pods" in low or "\u044d\u0439\u0440\u043f\u043e\u0434" in low:
+        return "AirPods"
     if "casio" in low:
         return "casio \u0447\u0430\u0441\u044b"
     if "watch" in low or "clock" in low or "\u0447\u0430\u0441" in low:
@@ -311,6 +383,10 @@ def normalize_query(label: str) -> str:
 def category_from_query(query: str) -> str:
     low = query.lower()
 
+    if "apple watch" in low or "applewatch" in low:
+        return "\u0421\u043c\u0430\u0440\u0442-\u0447\u0430\u0441\u044b"
+    if "airpods" in low or "air pods" in low:
+        return "\u041d\u0430\u0443\u0448\u043d\u0438\u043a\u0438"
     if "\u0447\u0430\u0441" in low or "watch" in low or "casio" in low:
         return "\u0410\u043a\u0441\u0435\u0441\u0441\u0443\u0430\u0440\u044b"
     if "\u043a\u0435\u043f" in low or "cap" in low or "hat" in low:
@@ -336,6 +412,10 @@ def category_from_query(query: str) -> str:
 def listings_for_query(query: str):
     low = query.lower()
 
+    if "apple watch" in low or "applewatch" in low:
+        return DEMO_APPLE_WATCH_LISTINGS
+    if "airpods" in low or "air pods" in low:
+        return DEMO_AIRPODS_LISTINGS
     if "casio" in low or "\u0447\u0430\u0441" in low or "watch" in low:
         return DEMO_CASIO_LISTINGS
     if "\u043a\u0435\u043f" in low or "\u043f\u0430\u043f\u0430" in low or "cap" in low or "hat" in low or "baseball" in low:
@@ -392,6 +472,8 @@ def parse_category_answer(answer: str) -> str:
     low = re.sub(r"\s+", " ", low).strip()
 
     category_aliases = {
+        "apple_watch": ["apple watch", "applewatch"],
+        "airpods": ["airpods", "air pods"],
         "watch": ["watch", "watches", "clock", "casio"],
         "cap": ["cap", "hat", "baseball cap", "papa"],
         "phone": ["phone", "smartphone", "iphone", "mobile"],
@@ -409,8 +491,10 @@ def parse_category_answer(answer: str) -> str:
 def classify_demo_category(image: Image.Image) -> str:
     prompt = (
         "Look at the main visible sellable object in the photo. "
-        "Choose exactly one category from this list: watch, cap, phone, ring, glasses, other. "
-        "Use watch for wrist watches including Casio. Use cap for baseball caps and hats. "
+        "Choose exactly one category from this list: apple_watch, airpods, watch, cap, phone, ring, glasses, other. "
+        "Use apple_watch only for an Apple Watch or a clearly Apple-branded smartwatch. "
+        "Use airpods only for Apple AirPods or their charging case. "
+        "Use watch for other wrist watches including Casio. Use cap for baseball caps and hats. "
         "Use phone for smartphones and iPhones. Use ring for jewelry rings. "
         "Use glasses for eyeglasses or sunglasses. "
         "Return only one word from the list."
