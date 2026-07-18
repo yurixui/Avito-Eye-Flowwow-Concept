@@ -327,9 +327,9 @@ def clean_answer(text: str) -> str:
 
 
 CATEGORY_QUERIES = {
-    "apple_watch": "Apple Watch",
-    "airpods": "AirPods",
-    "watch": "casio \u0447\u0430\u0441\u044b",
+    "apple_watch": "\u0427\u0430\u0441\u044b Apple Watch",
+    "airpods": "\u041d\u0430\u0443\u0448\u043d\u0438\u043a\u0438 AirPods",
+    "watch": "\u0427\u0430\u0441\u044b Casio",
     "cap": "\u043a\u0435\u043f\u043a\u0430 \u043f\u0430\u043f\u0430",
     "phone": "iPhone 16",
     "ring": "\u043a\u043e\u043b\u044c\u0446\u043e \u0441\u0435\u0440\u0435\u0431\u0440\u044f\u043d\u043e\u0435",
@@ -345,11 +345,11 @@ def normalize_query(label: str) -> str:
         return CATEGORY_QUERIES[low]
 
     if "apple watch" in low or "applewatch" in low or "\u044d\u043f\u043f\u043b \u0432\u043e\u0442\u0447" in low:
-        return "Apple Watch"
+        return "\u0427\u0430\u0441\u044b Apple Watch"
     if "airpods" in low or "air pods" in low or "\u044d\u0439\u0440\u043f\u043e\u0434" in low:
-        return "AirPods"
+        return "\u041d\u0430\u0443\u0448\u043d\u0438\u043a\u0438 AirPods"
     if "casio" in low:
-        return "casio \u0447\u0430\u0441\u044b"
+        return "\u0427\u0430\u0441\u044b Casio"
     if "watch" in low or "clock" in low or "\u0447\u0430\u0441" in low:
         return "\u043d\u0430\u0440\u0443\u0447\u043d\u044b\u0435 \u0447\u0430\u0441\u044b"
     if "cap" in low or "hat" in low or "baseball" in low or "\u043a\u0435\u043f" in low or "\u043f\u0430\u043f\u0430" in low:
