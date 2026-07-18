@@ -12,6 +12,7 @@ const RESULT_SHEET_EXPANDED_OFFSET = -256;
 const RESULT_SHEET_EXPAND_THRESHOLD = -72;
 const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
+const SEARCH_SHEET_OFFSET = -284;
 const MIN_ANALYSIS_DURATION_MS = 2400;
 const VISION_API_URL =
   import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://bumx9gu6uhboac-8000.proxy.runpod.net";
@@ -234,6 +235,50 @@ function mergeVisionSummary(result: VisionResult | null): ObjectSummary {
     listings,
     count: result?.avitoCount ?? listings.length,
   };
+}
+
+function getSearchSuggestions(label?: string) {
+  const value = cleanModelLabel(label).toLowerCase();
+
+  if (value.includes("vinfast") || value.includes("авто") || value.includes("car")) {
+    return [
+      "Найди эту модель в другом цвете",
+      "Искать только в Чите",
+      "С пробегом не более 10 000 км",
+      "Похожие автомобили",
+      "Черного цвета",
+    ];
+  }
+
+  if (value.includes("apple watch") || value.includes("applewatch")) {
+    return ["Series 10 и новее", "Корпус 44–46 мм", "С GPS и LTE", "В чёрном цвете", "До 20 000 ₽"];
+  }
+
+  if (value.includes("airpods") || value.includes("air pods") || value.includes("эйрпод")) {
+    return ["AirPods Pro с шумоподавлением", "Только оригинальные", "Новые в упаковке", "С гарантией", "До 3 000 ₽"];
+  }
+
+  if (value.includes("casio") || value.includes("watch") || value.includes("час")) {
+    return ["В серебристом цвете", "Мужские часы", "Винтажные модели", "С металлическим браслетом", "До 2 000 ₽"];
+  }
+
+  if (value.includes("iphone") || value.includes("айфон") || value.includes("телефон")) {
+    return ["С памятью 256 ГБ", "Новый, без активации", "С двумя SIM", "В чёрном цвете", "До 50 000 ₽"];
+  }
+
+  if (value.includes("кольц") || value.includes("перст") || value.includes("ring")) {
+    return ["Серебро 925 пробы", "В стиле Maison Margiela", "Размер 17–18", "С документами", "До 5 000 ₽"];
+  }
+
+  if (value.includes("очки") || value.includes("pye") || value.includes("glasses")) {
+    return ["Солнцезащитные", "В чёрной оправе", "Бренд PYE", "С поляризацией", "До 7 000 ₽"];
+  }
+
+  if (value.includes("кеп") || value.includes("папа") || value.includes("cap") || value.includes("hat")) {
+    return ["Кепка «Папа»", "В чёрном цвете", "С вышивкой", "Новая", "До 5 000 ₽"];
+  }
+
+  return ["Похожие товары", "В другом цвете", "Новые", "С доставкой", "До 10 000 ₽"];
 }
 
 function useTypingPhrases(active: boolean) {
@@ -564,6 +609,8 @@ export function CameraScreen() {
   const [isGradientLeaving, setIsGradientLeaving] = useState(false);
   const [visionResult, setVisionResult] = useState<VisionResult | null>(null);
   const [capturedFrameSize, setCapturedFrameSize] = useState<FrameSize | null>(null);
+  const [isSearchEditing, setIsSearchEditing] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const { videoRef, state } = useCamera(facingMode);
   const contentRef = useWidthScale<HTMLDivElement>(DESIGN_WIDTH);
   const requestIdRef = useRef(0);
@@ -571,8 +618,11 @@ export function CameraScreen() {
   const dragPointerIdRef = useRef<number | null>(null);
   const dragTouchIdRef = useRef<number | null>(null);
   const dragBaseOffsetRef = useRef(0);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchReturnStateRef = useRef({ offset: 0, expanded: false });
   const typingText = useTypingPhrases(analysisState === "thinking");
   const objectSummary = useMemo(() => mergeVisionSummary(visionResult), [visionResult]);
+  const searchSuggestions = useMemo(() => getSearchSuggestions(visionResult?.label), [visionResult?.label]);
 
   const close = () => navigate(ROUTES.home);
   const flipCamera = () => setFacingMode((m) => (m === "environment" ? "user" : "environment"));
@@ -665,11 +715,32 @@ export function CameraScreen() {
     setIsGradientLeaving(false);
     setAnalysisState("idle");
     setVisionResult(null);
+    setIsSearchEditing(false);
+    setSearchText("");
     setCapturedFrameSize(null);
     setFrozenFrameUrl((previousUrl) => {
       if (previousUrl) URL.revokeObjectURL(previousUrl);
       return null;
     });
+  };
+
+  const openSearchEditor = () => {
+    if (!isResult) return;
+
+    searchReturnStateRef.current = { offset: sheetOffset, expanded: isSheetExpanded };
+    setIsSheetExpanded(false);
+    setSheetOffset(SEARCH_SHEET_OFFSET);
+    setIsSearchEditing(true);
+    searchInputRef.current?.focus({ preventScroll: true });
+  };
+
+  const closeSearchEditor = () => {
+    const returnState = searchReturnStateRef.current;
+    setSearchText("");
+    setIsSearchEditing(false);
+    setIsSheetExpanded(returnState.expanded);
+    setSheetOffset(returnState.offset);
+    searchInputRef.current?.blur();
   };
 
   const closeProcessSheet = () => {
@@ -738,6 +809,7 @@ export function CameraScreen() {
 
   const handleSheetPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "touch") return;
+    if (isSearchEditing || (event.target instanceof HTMLElement && event.target.closest("[data-search-editor]"))) return;
 
     dragPointerIdRef.current = event.pointerId;
     startSheetDrag(event.clientY);
@@ -766,6 +838,8 @@ export function CameraScreen() {
   const handleSheetTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (!isProcessing || isSheetClosing || event.touches.length === 0) return;
     const target = event.target;
+
+    if (isSearchEditing || (target instanceof HTMLElement && target.closest("[data-search-editor]"))) return;
 
     if (
       isSheetExpanded &&
@@ -901,7 +975,7 @@ export function CameraScreen() {
             <img className={styles.objectDot} style={objectDotStyle} src="/images/camera-screen/dot-object.svg" alt="" />
 
             <div
-              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetExpanded ? styles.processSheetExpanded : ""} ${hasSheetEntered ? styles.processSheetEntered : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
+              className={`${styles.processSheet} ${isResult ? styles.processSheetResult : ""} ${isSheetExpanded ? styles.processSheetExpanded : ""} ${isSearchEditing ? styles.processSheetSearchEditing : ""} ${hasSheetEntered ? styles.processSheetEntered : ""} ${isSheetDragging ? styles.processSheetDragging : ""} ${isSheetClosing ? styles.processSheetClosing : ""}`}
               style={processSheetStyle}
               onPointerDown={handleSheetPointerDown}
               onPointerMove={handleSheetPointerMove}
@@ -922,17 +996,58 @@ export function CameraScreen() {
                 </div>
               ) : (
                 <div className={styles.resultContent}>
-                  <div className={styles.resultSearchBar}>
+                  <div
+                    className={`${styles.resultSearchBar} ${isSearchEditing ? styles.resultSearchBarEditing : ""}`}
+                    onClick={openSearchEditor}
+                    data-search-editor
+                  >
                     <div className={styles.resultPhoto}>
                       {frozenFrameUrl && <img src={frozenFrameUrl} alt="" />}
                     </div>
-                    <div className={styles.resultSearchHint}>
+                    <div className={`${styles.resultSearchHint} ${isSearchEditing ? styles.resultSearchHintHidden : ""}`}>
                       <img src="/images/camera-screen/assistant-icon.svg" alt="" />
                       <span>Дополнить запрос</span>
                     </div>
+                    <input
+                      ref={searchInputRef}
+                      className={`${styles.resultSearchInput} ${isSearchEditing ? styles.resultSearchInputVisible : ""}`}
+                      value={searchText}
+                      onChange={(event) => setSearchText(event.target.value)}
+                      aria-label="Дополнить запрос"
+                      autoCapitalize="sentences"
+                      enterKeyHint="search"
+                    />
+                    <button
+                      className={`${styles.resultSearchClose} ${isSearchEditing ? styles.resultSearchCloseVisible : ""}`}
+                      type="button"
+                      aria-label="Вернуться к результатам"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        closeSearchEditor();
+                      }}
+                    />
                   </div>
 
-                  <section className={styles.objectInfo}>
+                  <div className={`${styles.searchAddPhotos} ${isSearchEditing ? styles.searchEditorVisible : ""}`} data-search-editor>
+                    <span className={styles.searchAddPhotoButton} aria-hidden>+</span>
+                    <span className={styles.searchPhotoThumb}>
+                      {frozenFrameUrl && <img src={frozenFrameUrl} alt="" />}
+                    </span>
+                    <span className={styles.searchPhotoThumb}>
+                      {objectSummary.listings[0]?.image && <img src={objectSummary.listings[0].image} alt="" />}
+                    </span>
+                  </div>
+
+                  <div className={`${styles.searchSuggestions} ${isSearchEditing ? styles.searchEditorVisible : ""}`} data-search-editor>
+                    {searchSuggestions.map((suggestion) => (
+                      <div className={styles.searchSuggestion} key={suggestion}>
+                        <span className={styles.searchSuggestionSparkle} aria-hidden>✦</span>
+                        <span>{suggestion}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <section className={`${styles.objectInfo} ${isSearchEditing ? styles.resultViewHidden : ""}`}>
                     <div className={styles.objectNameGroup}>
                       <h2>{objectSummary.title}</h2>
                       <div className={styles.objectCategory}>
@@ -951,7 +1066,7 @@ export function CameraScreen() {
                     </div>
                   </section>
 
-                  <section className={styles.resultsBlock}>
+                  <section className={`${styles.resultsBlock} ${isSearchEditing ? styles.resultViewHidden : ""}`}>
                     {objectSummary.listings.length > 0 ? (
                       <>
                         <h3>Найдено {objectSummary.count} объявлений в Москве</h3>
