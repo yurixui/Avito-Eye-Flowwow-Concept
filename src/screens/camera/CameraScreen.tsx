@@ -14,7 +14,7 @@ const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
 const MIN_ANALYSIS_DURATION_MS = 2400;
 const VISION_API_URL =
-  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://substances-decision-ivory-tire.trycloudflare.com";
+  import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://bumx9gu6uhboac-8000.proxy.runpod.net";
 const THINKING_PHRASES = ["Вникаю...", "Анализирую...", "Дайте-ка подумать.."];
 
 type AnalysisState = "idle" | "thinking" | "found" | "error";
