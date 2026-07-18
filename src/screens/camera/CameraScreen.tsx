@@ -1,4 +1,4 @@
-import { type AnimationEvent, type CSSProperties, type PointerEvent, type TouchEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, type AnimationEvent, type CSSProperties, type PointerEvent, type TouchEvent, type TransitionEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/app/router";
 import { LottiePlayer } from "@/shared/components/LottiePlayer";
@@ -12,7 +12,7 @@ const RESULT_SHEET_EXPANDED_OFFSET = -256;
 const RESULT_SHEET_EXPAND_THRESHOLD = -72;
 const RESULT_SHEET_COLLAPSE_THRESHOLD = -160;
 const RESULT_SHEET_CLOSE_THRESHOLD = 96;
-const SEARCH_SHEET_OFFSET = -284;
+const SEARCH_SHEET_OFFSET = -293;
 const MIN_ANALYSIS_DURATION_MS = 2400;
 const VISION_API_URL =
   import.meta.env.VITE_AVITO_EYE_VISION_API_URL ?? "https://bumx9gu6uhboac-8000.proxy.runpod.net";
@@ -1025,11 +1025,15 @@ export function CameraScreen() {
                         event.stopPropagation();
                         closeSearchEditor();
                       }}
-                    />
+                    >
+                      <img src="/images/camera-screen/search-close.svg" alt="" />
+                    </button>
                   </div>
 
                   <div className={`${styles.searchAddPhotos} ${isSearchEditing ? styles.searchEditorVisible : ""}`} data-search-editor>
-                    <span className={styles.searchAddPhotoButton} aria-hidden>+</span>
+                    <span className={styles.searchAddPhotoButton} aria-hidden>
+                      <img src="/images/camera-screen/search-add.svg" alt="" />
+                    </span>
                     <span className={styles.searchPhotoThumb}>
                       {frozenFrameUrl && <img src={frozenFrameUrl} alt="" />}
                     </span>
@@ -1039,11 +1043,16 @@ export function CameraScreen() {
                   </div>
 
                   <div className={`${styles.searchSuggestions} ${isSearchEditing ? styles.searchEditorVisible : ""}`} data-search-editor>
-                    {searchSuggestions.map((suggestion) => (
-                      <div className={styles.searchSuggestion} key={suggestion}>
-                        <span className={styles.searchSuggestionSparkle} aria-hidden>✦</span>
-                        <span>{suggestion}</span>
-                      </div>
+                    {searchSuggestions.map((suggestion, index) => (
+                      <Fragment key={suggestion}>
+                        <div className={styles.searchSuggestion}>
+                          <span className={styles.searchSuggestionSparkle} aria-hidden>
+                            <img src="/images/camera-screen/search-ai.svg" alt="" />
+                          </span>
+                          <span>{suggestion}</span>
+                        </div>
+                        {index < searchSuggestions.length - 1 && <span className={styles.searchSuggestionDivider} aria-hidden />}
+                      </Fragment>
                     ))}
                   </div>
 
